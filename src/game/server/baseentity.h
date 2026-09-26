@@ -97,7 +97,12 @@ class CGlobalEvent;
 
 typedef CUtlVector< CBaseEntity* > EntityList_t;
 
-
+#ifdef PORTAL2
+struct CaptureInfo_t;
+struct CameraInfo_ScaleData_t;
+struct CheckPlacementData_t;
+class CInfoPlacementHelper;
+#endif
 
 //
 // Structure passed to input handlers.
@@ -563,8 +568,19 @@ public:
 	void		MakeDormant( void );
 	int			IsDormant( void );
 
+
+	// entities 'in stasis' don't draw, collide, think, or give/accept entity I/O.
+	virtual void		SetStasis(bool bStasis);
+	virtual bool		IsInStasis(void) const { return m_bIsInStasis; }
+
 protected:
-	
+	void	EnterStasis(void);
+	void	LeaveStasis(void);
+	void	RebaseTimeEntriesForStasis(bool bEnteringStasis);
+
+	// TODO: save these
+	MoveType_t	m_PreStasisMoveType;
+	bool		m_bIsInStasis;
 
 public:
 	void		RemoveDeferred( void );	// Sets the entity invisible, and makes it remove itself on the next frame
@@ -1876,8 +1892,35 @@ public:
 	}
 
 public:
+#ifdef PORTAL2
+	START_BRANCHING_SINGLETON_DEFINITION_NOBASE(CPhotoPlacementQuery)
+	{
+	public:
+		bool CheckPlacement(CaptureInfo_t & captureInfo, int iScaleStep, const Vector & vPlacementOrigin, const Vector & vPlacementDirection, const QAngle & qPlacementAngles, Vector & positionOut, QAngle & anglesOut, CInfoPlacementHelper * *pHelperOut, ITraceFilter * pTraceFilter = NULL);
+		virtual ITraceFilter* ModifyBaseTraceFilter(ITraceFilter * pBaseFilter);
+		virtual bool GetPlacementPosition(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & positionOut, QAngle & anglesOut);
+		virtual bool GetPlacementPosition_NoHelper(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & positionOut, QAngle & anglesOut);
+		virtual float GetPlacementHelperOffset(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData);
+		virtual int GetNumScaleUpSteps(const CaptureInfo_t * pCaptureInfo);
+		virtual int GetNumScaleDownSteps(const CaptureInfo_t * pCaptureInfo);
+		virtual float GetScaleForStep(int nScaleStep, const CaptureInfo_t * pCaptureInfo);
+		virtual float GetMaxPlacementDistance(void);
 
+		virtual void GetCentering(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & vExtentsOut, Vector & vCenterToOriginOut);
+		virtual void GetRotatedCentering(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, const VMatrix & matRotation, Vector & vExtentsOut, Vector & vCenterToOriginOut);
+		void GetRotatedCentering(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, const QAngle & qAngles, Vector & vExtentsOut, Vector & vCenterToOriginOut); //generates a VMatrix and calls the virtual version
 
+	protected:
+		virtual CameraInfo_ScaleData_t* GetSimpleScales(void);
+		int CustomDataGetNumScaleUpSteps(const CameraInfo_ScaleData_t & ScaleData);
+		int CustomDataGetNumScaleDownSteps(const CameraInfo_ScaleData_t & ScaleData);
+		float CustomDataGetScaleForStep(int nScaleStep, const CameraInfo_ScaleData_t & ScaleData);
+
+		bool WallPlacement(float fBumpLeftRightDist, float fBumpUpDownDist, float fBumpOffWall, CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & positionOut, QAngle & anglesOut);
+		bool SpacePlacement(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, const QAngle & qPlacementAngleIN, int traceMask, Vector & positionOut);
+	};
+	END_BRANCHING_SINGLETON_DEFINITION_NOBASE(CPhotoPlacementQuery);
+#endif
 };
 
 // Send tables exposed in this module.

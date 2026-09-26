@@ -195,6 +195,19 @@ void CHLModeManager::LevelShutdown( void )
 	}
 }
 
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool ClientModePortalNormal::ShouldDrawViewModel(void)
+{
+#ifdef PORTAL2
+	// Don't draw the viewmodel while zoomed in
+	C_BaseHLPlayer* pHLPlayer = (C_BaseHLPlayer*)C_BasePlayer::GetLocalPlayer();
+	if (pHLPlayer && pHLPlayer->m_HL2Local.m_bZooming)
+		return false;
+#endif // PORTAL2
+
+	return true;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

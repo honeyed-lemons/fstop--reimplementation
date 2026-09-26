@@ -17,33 +17,62 @@
 class CFuncPortalDetector : public CBaseEntity
 {
 public:
-	DECLARE_CLASS( CFuncPortalDetector, CBaseEntity );
+	DECLARE_CLASS(CFuncPortalDetector, CBaseEntity);
+
+	CFuncPortalDetector();
+	~CFuncPortalDetector();
 
 	// Overloads from base entity
-	virtual void	Spawn( void );
-	
-	void OnActivate( void );
+	virtual void	Spawn(void);
+
+	virtual void SetActive(bool bActive);
 
 	// Inputs to flip functionality on and off
-	void InputDisable( inputdata_t &inputdata );
-	void InputEnable( inputdata_t &inputdata );
-	void InputToggle( inputdata_t &inputdata );
+	void InputDisable(inputdata_t& inputdata);
+	void InputEnable(inputdata_t& inputdata);
+	void InputToggle(inputdata_t& inputdata);
+
+	virtual void UpdateOnPortalMoved(CProp_Portal* pPortal);
 
 	// misc public methods
-	bool IsActive( void ) { return m_bActive; }	// is this area currently detecting portals
-	int GetLinkageGroupID( void ) { return m_iLinkageGroupID; }
+	virtual bool IsActive(void) { return m_bActive; }	// is this area currently detecting portals
+	virtual int GetLinkageGroupID(void) { return m_iLinkageGroupID; }
 
+	COutputEvent m_OnStartTouchPortal;
 	COutputEvent m_OnStartTouchPortal1;
 	COutputEvent m_OnStartTouchPortal2;
 	COutputEvent m_OnStartTouchLinkedPortal;
 	COutputEvent m_OnStartTouchBothLinkedPortals;
+	COutputEvent m_OnEndTouchPortal;
+	COutputEvent m_OnEndTouchPortal1;
+	COutputEvent m_OnEndTouchPortal2;
+	COutputEvent m_OnEndTouchLinkedPortal;
+	COutputEvent m_OnEndTouchBothLinkedPortals;
 
 	DECLARE_DATADESC();
 
-private:
+	CFuncPortalDetector* m_pNext;			// Needed for the template list	
+
+protected:
+
+	// Called when portals move to/from an area with a portal detector
+	virtual void PortalPlacedInsideBounds(CProp_Portal* pPortal);
+	virtual void PortalRemovedFromInsideBounds(CProp_Portal* pPortal);
+
+	// Is a portal specified already touching this detector?
+	virtual bool IsPortalTouchingDetector(const CProp_Portal* pPortal);
+
+
 	bool	m_bActive;			// are we currently detecting portals
 	int		m_iLinkageGroupID;	// what set of portals are we testing for?
-	
+
+	// Room for 2: no more than 2 portals per linkage id are allowed.
+	EHANDLE m_phTouchingPortals[2];
+	int	m_iTouchingPortalCount;
 };
+
+// Global interface for getting the list of portal detectors.
+// Portals walk this when they move so all detectors can update.
+CFuncPortalDetector* GetPortalDetectorList();
 
 #endif

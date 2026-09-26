@@ -31,6 +31,7 @@
 #include "smoke_trail.h"
 #include "collisionutils.h"
 #include "toolframework/itoolframework.h"
+#include "../../public/responserules/response_types.h"
 
 
 
@@ -223,6 +224,14 @@ BEGIN_DATADESC( CBaseAnimating )
 
 	DEFINE_FIELD( m_fBoneCacheFlags, FIELD_SHORT ),
 
+#ifdef PORTAL2
+	DEFINE_KEYFIELD(m_nObjectScaleLevel, FIELD_INTEGER, "scalevalue"),
+	DEFINE_KEYFIELD(m_bCanBeCaptured, FIELD_BOOLEAN, "canbecaptured"),
+
+	DEFINE_OUTPUT(m_OnCameraCapture, "OnCameraCapture"),
+	DEFINE_OUTPUT(m_OnCameraRelease, "OnCameraRelease"),
+	DEFINE_OUTPUT(m_OnFizzled, "OnFizzled"),
+#endif // PORTAL2
 
 
 	END_DATADESC()
@@ -273,7 +282,9 @@ END_SEND_TABLE()
 
 
 BEGIN_ENT_SCRIPTDESC( CBaseAnimating, CBaseEntity, "Animating models" )
-
+	#ifdef PORTAL2
+	DEFINE_SCRIPTFUNC(GetObjectScaleLevel, "The scale size of the entity")
+	#endif // PORTAL2
 	DEFINE_SCRIPTFUNC( LookupAttachment, "Get the named attachement id"  )
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetAttachmentOrigin, "GetAttachmentOrigin", "Get the attachement id's origin vector"  )
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetAttachmentAngles, "GetAttachmentAngles", "Get the attachement id's angles as a p,y,r vector"  )
@@ -303,7 +314,10 @@ CBaseAnimating::CBaseAnimating()
 	SetGlobalFadeScale( 1.0f );
 	m_fBoneCacheFlags = 0;
 	
-
+#ifdef PORTAL2
+	m_nObjectScaleLevel = 0;	 // No scale
+	m_bCanBeCaptured = true;
+#endif // PORTAL2
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -334,7 +348,17 @@ void CBaseAnimating::Activate()
 	BaseClass::Activate();
 	SetLightingOrigin( m_iszLightingOrigin );
 	SetLightingOriginRelative( m_iszLightingOriginRelative );
+#if defined ( PORTAL2 )
+	// Scaled physics objects (re)create their physics here
+	if (GetObjectScaleLevel() != 0 && VPhysicsGetObject())
+	{
+		// sanity check to make sure 'm_flModelScale' is in sync with the 
+		// mod specific 'm_nObjectScaleLevel' member.
+		Assert(m_flModelScale > 0.0f && m_flModelScale != 1.0f);
 
+		UTIL_CreateScaledPhysObject(this, m_flModelScale);
+	}
+#endif // PORTAL2 
 
 }
 
@@ -1016,12 +1040,12 @@ float CBaseAnimating::GetSequenceGroundSpeed( CStudioHdr *pStudioHdr, int iSeque
 
 	if (t > 0)
 	{
-#if defined( INFESTED )
+#if defined( PORTAL2 ) || defined( TERROR )
 		float flBaseSpeed = GetSequenceMoveDist( pStudioHdr, iSequence ) / t;
 		return flBaseSpeed * GetModelScale() * GetPlaybackRate();
 #else
 		return GetSequenceMoveDist( pStudioHdr, iSequence ) / t;
-#endif // INFESTED
+#endif // PORTAL2 || TERROR
 	}
 	else
 	{
@@ -2747,7 +2771,23 @@ void CBaseAnimating::SetModel( const char *szModelName )
 
 	PopulatePoseParameters();
 
+#if defined ( PORTAL2 )
+	// After we set our bounds based on the model's default size,
+	// scale the bounds based on any starting scale value set in the map.
+	if (GetObjectScaleLevel() != 0)
+	{
+		CaptureInfo_t captureInfo;
+		UTIL_InitCaptureInfo(captureInfo, this);
+		float flModelScale = 1.0f;
+		if (captureInfo.pPlacementQuery)
+		{
+			flModelScale = captureInfo.pPlacementQuery->GetScaleForStep(GetObjectScaleLevel(), &captureInfo);
+		}
 
+		// Scale by this amount to reach our target scale
+		SetModelScale(flModelScale);
+	}
+#endif // PORTAL2 
 }
 
 //-----------------------------------------------------------------------------
@@ -3082,6 +3122,43 @@ int CBaseAnimating::DrawDebugTextOverlays(void)
 		EntityText(text_offset,tempstr,0,r,g,b);
 		text_offset++;
 
+#ifdef PORTAL2
+		Q_strncpy(tempstr, "Size: ", sizeof(tempstr));
+		char catstr[128];
+		int nCurrentScale = GetObjectScaleLevel();
+		for (int i = Get_CPhotoPlacementQuery()->GetNumScaleDownSteps(NULL); i > 0; i--)
+		{
+			if (nCurrentScale == -i)
+			{
+				Q_snprintf(catstr, sizeof(catstr), "->%.02f<- ", Get_CPhotoPlacementQuery()->GetScaleForStep(-i, NULL));
+			}
+			else
+			{
+				Q_snprintf(catstr, sizeof(catstr), "(%.02f) ", Get_CPhotoPlacementQuery()->GetScaleForStep(-i, NULL));
+			}
+
+			// Add it on
+			Q_strncat(tempstr, catstr, sizeof(tempstr));
+		}
+
+		for (int i = 0; i <= Get_CPhotoPlacementQuery()->GetNumScaleUpSteps(NULL); i++)
+		{
+			if (nCurrentScale == i)
+			{
+				Q_snprintf(catstr, sizeof(catstr), "->%.02f<- ", Get_CPhotoPlacementQuery()->GetScaleForStep(i, NULL));
+			}
+			else
+			{
+				Q_snprintf(catstr, sizeof(catstr), "(%.02f) ", Get_CPhotoPlacementQuery()->GetScaleForStep(i, NULL));
+			}
+
+			// Add it on
+			Q_strncat(tempstr, catstr, sizeof(tempstr));
+		}
+
+		EntityText(text_offset, tempstr, 0, r, g, b);
+		text_offset++;
+#endif // PORTAL2
 	}
 
 	// Visualize attachment points
@@ -3523,6 +3600,19 @@ Activity CBaseAnimating::GetSequenceActivity( int iSequence )
 void CBaseAnimating::ModifyOrAppendCriteria( AI_CriteriaSet& set )
 {
 	BaseClass::ModifyOrAppendCriteria( set );
+
+#ifdef PORTAL2
+	int nObjectScaleLevel = GetObjectScaleLevel();
+	int nNumStepsUp = Get_CPhotoPlacementQuery()->GetNumScaleUpSteps(NULL);
+	int nNumStepsDown = Get_CPhotoPlacementQuery()->GetNumScaleDownSteps(NULL);
+
+	if (nObjectScaleLevel == 0)
+		set.AppendCriteria("object_size", "normal");
+	else if (nObjectScaleLevel == nNumStepsUp)
+		set.AppendCriteria("object_size", "large");
+	else if (nObjectScaleLevel == nNumStepsDown)
+		set.AppendCriteria("object_size", "small");
+#endif // PORTAL2
 
 	// TODO
 	// Append any animation state parameters here
@@ -4007,4 +4097,106 @@ bool CBaseAnimating::IsSequenceLooping( CStudioHdr *pStudioHdr, int iSequence )
 	return (::GetSequenceFlags( pStudioHdr, iSequence ) & STUDIO_LOOPING) != 0;
 }
 
+#ifdef PORTAL2
 
+//
+//  Placement query
+//
+
+
+bool CBaseAnimating::CPhotoPlacementQuery::GetPlacementPosition_NoHelper(CaptureInfo_t& captureInfo,
+	CheckPlacementData_t& placementData,
+	Vector& positionOut,
+	QAngle& anglesOut)
+{
+	// Move one unit away from the hit surface
+	Vector vecTargetPos = placementData.Trace.endpos + placementData.Trace.plane.normal;
+	Vector vecOffset = vec3_origin;
+
+	// Six cardinal directions we'll look in
+	Vector vecDirections[6];
+	vecDirections[0] = Vector(0, 0, 1);
+	vecDirections[1] = Vector(0, 0, -1);
+	vecDirections[2] = Vector(0, 1, 0);
+	vecDirections[3] = Vector(0, -1, 0);
+	vecDirections[4] = Vector(1, 0, 0);
+	vecDirections[5] = Vector(-1, 0, 0);
+
+	Vector vecObjectSize = captureInfo.hCapturedEnt->WorldAlignSize();
+
+	trace_t	tr;
+
+	// Account for our scaled size
+	for (int i = 0; i < ARRAYSIZE(vecDirections); i++)
+	{
+		Ray_t ray;
+		ray.Init(vecTargetPos, vecTargetPos + (vecDirections[i] * vecObjectSize[i / 2]));
+		UTIL_Portal_TraceRay(ray, MASK_SOLID, NULL, COLLISION_GROUP_NONE, &tr);
+		vecOffset -= (vecDirections[i] * vecObjectSize[i / 2] * (1.0f - tr.fraction));
+		// NDebugOverlay::Line( tr.startpos, tr.endpos, 255, 0, 0, true, 0.05f );
+	}
+
+	positionOut = vecTargetPos + vecOffset;
+
+	return true;
+}
+
+bool CBaseAnimating::MayBeCaptured(void)
+{
+	return m_bCanBeCaptured;
+}
+
+extern bool g_bAllOnCapturedChainedToBase;
+
+void CBaseAnimating::OnCaptured(void)
+{
+	// Store off our fire state
+	if (IsOnFire())
+	{
+		CBaseEntity* pEffect = GetEffectEntity();
+		pEffect->SetStasis(true);
+	}
+
+	// activator won't be valid in multiplayer
+	Assert(!GameRules()->IsMultiplayer());
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	CBaseCombatWeapon* pCamera = pPlayer->GetActiveWeapon();
+	m_OnCameraCapture.FireOutput(pCamera, this);
+
+	g_bAllOnCapturedChainedToBase = true;
+}
+
+extern bool g_bAllOnReleasedChainedToBase;
+
+void CBaseAnimating::OnReleased(void)
+{
+	// Store off our fire state
+	if (IsOnFire())
+	{
+		CBaseEntity* pEffect = GetEffectEntity();
+		pEffect->SetStasis(false);
+	}
+
+	// For debugging help
+	g_bAllOnReleasedChainedToBase = true;
+
+	// activator won't be valid in multiplayer
+	Assert(!GameRules()->IsMultiplayer());
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	CBaseCombatWeapon* pPlacementWeapon = pPlayer->GetActiveWeapon();
+	m_OnCameraRelease.FireOutput(pPlacementWeapon, this);
+}
+
+void CBaseAnimating::OnFizzled(void)
+{
+	m_OnFizzled.FireOutput(this, this);
+}
+
+
+bool CBaseAnimating::ShouldSavePhysics(void)
+{
+	// Recreate physics on restore if we have been scaled
+	return (m_flModelScale == 1.0f);
+}
+
+#endif // PORTAL2

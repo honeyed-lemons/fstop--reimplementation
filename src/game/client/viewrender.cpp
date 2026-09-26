@@ -258,6 +258,28 @@ CON_COMMAND( r_cheapwaterend,  "" )
 }
 
 
+#ifdef PORTAL2
+struct AperturePhotoViewQueue_t
+{
+	EHANDLE hEnt;
+	ITexture* pTexture;
+	int iFailedTries;
+};
+CUtlVector<AperturePhotoViewQueue_t> g_AperturePhotoQueue;
+
+void Aperture_QueuePhotoView(EHANDLE hPhotoEntity, ITexture* pRenderTarget)
+{
+	if (pRenderTarget == NULL)
+		return;
+
+	AperturePhotoViewQueue_t temp;
+	temp.hEnt = hPhotoEntity;
+	temp.pTexture = pRenderTarget;
+	temp.iFailedTries = 0;
+
+	g_AperturePhotoQueue.AddToTail(temp);
+}
+#endif
 
 
 
@@ -724,6 +746,34 @@ public:
 	cplane_t m_ReflectionPlane;
 };
 
+//-----------------------------------------------------------------------------
+// view of a single entity by itself
+//-----------------------------------------------------------------------------
+#ifdef PORTAL2
+class CAperturePhotoView : public CSimpleWorldView
+{
+	DECLARE_CLASS(CAperturePhotoView, CSimpleWorldView);
+public:
+	CAperturePhotoView(CViewRender* pMainView) :
+		CSimpleWorldView(pMainView),
+		m_pRenderTarget(NULL)
+	{
+	}
+
+	bool			Setup(C_BaseEntity* pTargetEntity, const CViewSetup& view, int* pClearFlags, SkyboxVisibility_t* pSkyboxVisible, ITexture* pRenderTarget = NULL);
+
+	//Skybox drawing through portals with workarounds to fix area bits, position/scaling, view id's..........
+	void			Draw();
+
+#ifdef PORTAL
+	virtual bool	ShouldDrawPortals() { return false; }
+#endif
+
+private:
+	ITexture* m_pRenderTarget;
+	C_BaseEntity* m_pTargetEntity;
+};
+#endif
 
 
 
@@ -2379,7 +2429,27 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 		}
 	#endif
 
-
+#ifdef PORTAL2
+		if (g_AperturePhotoQueue.Count() != 0)
+		{
+			for (int i = g_AperturePhotoQueue.Count(); --i >= 0; )
+			{
+				if (g_AperturePhotoQueue[i].hEnt != NULL)
+				{
+					ViewDrawPhoto(g_AperturePhotoQueue[i].pTexture, g_AperturePhotoQueue[i].hEnt);
+					g_AperturePhotoQueue.FastRemove(i);
+				}
+				else
+				{
+					++g_AperturePhotoQueue[i].iFailedTries;
+					if (g_AperturePhotoQueue[i].iFailedTries > 10)
+					{
+						g_AperturePhotoQueue.FastRemove(i);
+					}
+				}
+			}
+		}
+#endif
 
 		g_bRenderingView = true;
 
@@ -3243,6 +3313,80 @@ void CViewRender::Draw3dSkyboxworld_Portal( const CViewSetup &view, int &nClearF
 }
 
 #endif //PORTAL
+
+#ifdef PORTAL2
+void CViewRender::ViewDrawPhoto(ITexture* pRenderTarget, C_BaseEntity* pTargetEntity)
+{
+	CRefPtr<CAperturePhotoView> pPhotoView = new CAperturePhotoView(this);
+	int nClearFlags = VIEW_CLEAR_COLOR | VIEW_CLEAR_DEPTH | VIEW_CLEAR_STENCIL;
+	SkyboxVisibility_t nSkyboxVisible = SKYBOX_NOT_VISIBLE;
+
+	CMatRenderContextPtr pRenderContext(materials);
+	// pRenderContext->SetStencilEnable( false ); // FIXME: JDW
+
+	//bool bIsDormant = pTargetEntity->IsDormant();
+	//pTargetEntity->m_bDormant = false;
+
+	//IClientRenderable *pEntRenderable = pTargetEntity->GetClientRenderable();
+
+	bool bNoDraw = pTargetEntity->IsEffectActive(EF_NODRAW);
+	if (bNoDraw)
+	{
+		pTargetEntity->RemoveEffects(EF_NODRAW);
+	}
+
+	bool bHandle = pTargetEntity->GetRenderHandle() == INVALID_CLIENT_RENDER_HANDLE;
+	if (bHandle)
+	{
+		ClientLeafSystem()->AddRenderable(pTargetEntity, false, RENDERABLE_IS_OPAQUE, RENDERABLE_MODEL_ENTITY);
+
+		ClientLeafSystem()->RenderableChanged(pTargetEntity->m_hRender);
+		ClientLeafSystem()->PreRender();
+	}
+
+	//bool bShouldDraw = pEntRenderable->ShouldDraw();
+	//bool bIsVisible = pTargetEntity->IsVisible();
+
+	Assert(pTargetEntity->ShouldDraw() && pTargetEntity->IsVisible());
+
+	CViewSetup photoview = m_CurrentView;
+	photoview.width = pRenderTarget->GetActualWidth();
+	photoview.height = pRenderTarget->GetActualHeight();
+	photoview.x = 0;
+	photoview.y = 0;
+	//photoview.origin = pCameraEnt->GetAbsOrigin();
+	//photoview.angles = pCameraEnt->GetAbsAngles();
+	//photoview.fov = pCameraEnt->GetFOV();
+	photoview.m_bOrtho = false;
+	//photoview.m_flAspectRatio = 0.0f;
+	//(*this) = photoview;
+
+	SetupCurrentView(photoview.origin, photoview.angles, VIEW_MONITOR);
+
+	Frustum frustum;
+	render->Push3DView(photoview, VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR, pRenderTarget, (VPlane*)frustum);
+
+	//HACKHACK: need to setup a proper view
+	if (pPhotoView->Setup(pTargetEntity, photoview, &nClearFlags, &nSkyboxVisible, pRenderTarget) == true)
+	{
+		AddViewToScene(pPhotoView);
+	}
+
+	render->PopView(frustum);
+
+	//pTargetEntity->m_bDormant = bIsDormant;
+
+	if (bHandle)
+	{
+		ClientLeafSystem()->RemoveRenderable(pTargetEntity->GetRenderHandle());
+	}
+
+	if (bNoDraw)
+	{
+		pTargetEntity->AddEffects(EF_NODRAW);
+	}
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Methods related to controlling the cheap water distance
@@ -5425,6 +5569,182 @@ void CPortalSkyboxView::Draw()
 	g_CurrentViewID = iCurrentViewID;
 }
 #endif // PORTAL
+
+#ifdef PORTAL2
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+bool CAperturePhotoView::Setup(C_BaseEntity* pTargetEntity, const CViewSetup& view, int* pClearFlags, SkyboxVisibility_t* pSkyboxVisible, ITexture* pRenderTarget)
+{
+	if (pTargetEntity == NULL)
+		return false;
+
+	IClientRenderable* pEntRenderable = pTargetEntity->GetClientRenderable();
+
+	if (pEntRenderable == NULL)
+		return false;
+
+	m_pTargetEntity = pTargetEntity;
+
+	VisibleFogVolumeInfo_t fogInfo;
+	WaterRenderInfo_t waterInfo;
+
+	memset(&fogInfo, 0, sizeof(VisibleFogVolumeInfo_t));
+	memset(&waterInfo, 0, sizeof(WaterRenderInfo_t));
+	waterInfo.m_bCheapWater = true;
+	BaseClass::Setup(view, *pClearFlags, false, fogInfo, waterInfo, NULL);
+
+	m_pRenderTarget = pRenderTarget;
+	return true;
+}
+
+ConVar cl_camera_minimal_photos("cl_camera_minimal_photos", "1", 0, "Draw just the targetted entity when taking a camera photo");
+
+
+void AddIClientRenderableToRenderList(IClientRenderable* pRenderable, CClientRenderablesList* pRenderablesList)
+{
+	CClientRenderablesList::CEntry renderableEntry;
+	RenderGroup_t group = ClientLeafSystem()->GenerateRenderListEntry(pRenderable, renderableEntry);
+	if (group == RENDER_GROUP_COUNT)
+		return;
+
+	for (int i = 0; i != pRenderablesList->m_RenderGroupCounts[group]; ++i)
+	{
+		if (pRenderablesList->m_RenderGroups[group][i].m_pRenderable == pRenderable)
+			return; //already in the list
+	}
+
+	int iAddIndex = pRenderablesList->m_RenderGroupCounts[group];
+	++pRenderablesList->m_RenderGroupCounts[group];
+	pRenderablesList->m_RenderGroups[group][iAddIndex] = renderableEntry;
+}
+
+void GetAllChildRenderables(C_BaseEntity* pEntity, IClientRenderable** pKeepers, int& iKeepCount, int iKeepArraySize)
+{
+	IClientRenderable* pThisRenderable = pEntity->GetClientRenderable();
+
+	//avoid duplicates and infinite recursion
+	for (int i = 0; i != iKeepCount; ++i)
+	{
+		if (pThisRenderable == pKeepers[i])
+			return;
+	}
+
+	pKeepers[iKeepCount++] = pThisRenderable;
+
+	if (pEntity->ParticleProp())
+	{
+		iKeepCount += pEntity->ParticleProp()->GetAllParticleEffectRenderables(&pKeepers[iKeepCount], iKeepArraySize - iKeepCount);
+	}
+	if (pEntity->GetEffectEntity() != NULL)
+	{
+		GetAllChildRenderables(pEntity->GetEffectEntity(), pKeepers, iKeepCount, iKeepArraySize);
+	}
+	for (C_BaseEntity* pMoveChild = pEntity->FirstMoveChild(); pMoveChild != NULL; pMoveChild = pMoveChild->NextMovePeer())
+	{
+		GetAllChildRenderables(pMoveChild, pKeepers, iKeepCount, iKeepArraySize);
+	}
+}
+
+ConVar cl_blur_test("cl_blur_test", "0", 0, "Blurs entities that have had their photo taken");
+ConVar cl_photo_disable_model_alpha_writes("cl_photo_disable_model_alpha_writes", "1", FCVAR_ARCHIVE, "Disallows the target entity in photos from writing to the photo's alpha channel");
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+void CAperturePhotoView::Draw()
+{
+	CMatRenderContextPtr pRenderContext(materials);
+
+	Vector vDiff = m_pTargetEntity->GetRenderOrigin() - origin;
+	Vector vMins, vMaxs;
+	m_pTargetEntity->GetRenderBounds(vMins, vMaxs);
+	float fGoodDist = MAX((vMaxs - vMins).Length() * (1.5f / 2.0f), 20.0f);
+	float fLength = vDiff.Length();
+	if (fLength > fGoodDist)
+	{
+		//move the camera closer for a better view
+#if 1 //use camera forward as offset direction
+		Vector vCameraForward;
+		AngleVectors(angles, &vCameraForward);
+
+		origin = m_pTargetEntity->WorldSpaceCenter() - (vCameraForward * fGoodDist);
+#else //use existing offset direction, but shorter
+		origin = m_pTargetEntity->WorldSpaceCenter() - (vDiff * (fGoodDist / fLength));
+#endif
+		//Vector vCameraForward;
+		//AngleVectors( angles, &vCameraForward );
+		//origin += vCameraForward * ((fLength - fGoodDist) * vCameraForward.Dot( vDiff / fLength ));
+	}
+
+	render->Push3DView(*this, VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR | VIEW_CLEAR_STENCIL, m_pRenderTarget, GetFrustum());
+	SetupCurrentView(origin, angles, VIEW_MONITOR);
+
+
+	MDLCACHE_CRITICAL_SECTION();
+
+	bool bDrawEverything = !cl_camera_minimal_photos.GetBool();
+	//Build the world list for now because I don't want to track down crash bugs and this doesn't happen often.
+	BuildWorldRenderLists(true, -1, true, false); // @MULTICORE (toml 8/9/2006): Portal problem, not sending custom vis down
+	if (!bDrawEverything)
+	{
+		memset(m_pRenderablesList->m_RenderGroupCounts, 0, sizeof(m_pRenderablesList->m_RenderGroupCounts));
+	}
+
+	BuildRenderableRenderLists(CurrentViewID());
+
+	IClientRenderable* keepHandles[MAX_EDICTS];
+	int iKeepChildren = 0;
+	GetAllChildRenderables(m_pTargetEntity, keepHandles, iKeepChildren, MAX_EDICTS);
+
+	//set the target entity as the only entity in the renderables list
+	{
+		if (!bDrawEverything)
+			memset(m_pRenderablesList->m_RenderGroupCounts, 0, sizeof(m_pRenderablesList->m_RenderGroupCounts));
+
+		for (int i = 0; i != iKeepChildren; ++i)
+		{
+			AddIClientRenderableToRenderList(keepHandles[i], m_pRenderablesList);
+		}
+	}
+
+	engine->Sound_ExtraUpdate();	// Make sure sound doesn't stutter
+
+	m_DrawFlags = m_pMainView->GetBaseDrawFlags() | DF_RENDER_UNDERWATER | DF_RENDER_ABOVEWATER;	// Don't draw water surface...
+
+	IMaterial* pPhotoBackground = materials->FindMaterial("photos/photo_background", TEXTURE_GROUP_CLIENT_EFFECTS, false);
+	pRenderContext->DrawScreenSpaceQuad(pPhotoBackground);
+
+	if (cl_photo_disable_model_alpha_writes.GetBool())
+		pRenderContext->OverrideAlphaWriteEnable(true, false);
+
+	if (bDrawEverything)
+		DrawWorld(0.0f);
+
+	DrawOpaqueRenderables(false);
+	if (bDrawEverything)
+	{
+		DrawTranslucentRenderables(false, false);
+	}
+	else
+	{
+		DrawTranslucentRenderablesNoWorld(false);
+	}
+
+	if (cl_photo_disable_model_alpha_writes.GetBool())
+		pRenderContext->OverrideAlphaWriteEnable(false, false);
+
+	IMaterial* pPhotoForeground = materials->FindMaterial("photos/photo_foreground", TEXTURE_GROUP_CLIENT_EFFECTS, false);
+	pRenderContext->DrawScreenSpaceQuad(pPhotoForeground);
+
+	m_DrawFlags = 0;
+	render->PopView(GetFrustum());
+
+	if (cl_blur_test.GetBool())
+		m_pTargetEntity->SetBlurState(true);
+}
+#endif
+
+
 
 //-----------------------------------------------------------------------------
 // 

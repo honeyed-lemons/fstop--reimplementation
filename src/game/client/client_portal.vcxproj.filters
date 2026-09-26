@@ -58,6 +58,9 @@
     <Filter Include="VPC Scripts">
       <UniqueIdentifier>{A40EE377-781A-C6B9-0C7C-B3BE118D248E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Portal2">
+      <UniqueIdentifier>{51309110-1a69-444e-a5f8-d76a4652946f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\bitmap.lib">
@@ -2207,6 +2210,9 @@
     <ClInclude Include="toolframework_client.h">
       <Filter>Tool Framework</Filter>
     </ClInclude>
+    <ClInclude Include="portal2\aperture_render_targets.h">
+      <Filter>Source Files\Portal2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -4065,6 +4071,27 @@
     </ClCompile>
     <ClCompile Include="toolframework_client.cpp">
       <Filter>Tool Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\c_npc_hover_turret.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\aperture_render_targets.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\c_item_photo.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_flash.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_indicator.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_photo_inventory.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_viewfinder.cpp">
+      <Filter>Source Files\Portal2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

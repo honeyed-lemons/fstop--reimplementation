@@ -16,6 +16,10 @@
 #include "datacache/idatacache.h"
 #include "tier0/threadtools.h"
 
+#ifdef PORTAL2
+#include "portal2/photo.h"
+#endif // PORTAL2
+
 struct animevent_t;
 struct matrix3x4_t;
 class CIKContext;
@@ -354,8 +358,24 @@ public:
 
 	bool PrefetchSequence( int iSequence );
 
+#ifdef PORTAL2
 
+	// Camera interface
+	START_BRANCHING_SINGLETON_DEFINITION(CPhotoPlacementQuery)
+	{
+	public:
+		virtual bool GetPlacementPosition_NoHelper(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & positionOut, QAngle & anglesOut);
+	};
+	END_BRANCHING_SINGLETON_DEFINITION(CPhotoPlacementQuery);
 
+	virtual bool MayBeCaptured(void);
+	virtual bool TestPreCapture(void) { return true; }
+	virtual void OnCaptured(void);
+	virtual void OnReleased(void);
+	virtual void OnFizzled(void);
+	virtual bool ShouldSavePhysics(void);
+
+#endif // PORTAL2
 
 private:
 	void LockStudioHdr();
@@ -364,6 +384,15 @@ private:
 	void StudioFrameAdvanceInternal( CStudioHdr *pStudioHdr, float flInterval );
 	void InputSetLightingOriginRelative( inputdata_t &inputdata );
 	void InputSetLightingOrigin( inputdata_t &inputdata );
+
+#ifdef PORTAL2
+public:
+	void SetObjectScaleLevel(int nScaleLevel) { m_nObjectScaleLevel = nScaleLevel; }
+	int GetObjectScaleLevel(void) { return m_nObjectScaleLevel; }
+protected:
+	int	m_nObjectScaleLevel;
+	bool m_bCanBeCaptured;			// Set true this prop allows capture by weapon_camera
+#endif // PORTAL2
 
 public:
 	bool CanSkipAnimation( void );
@@ -445,7 +474,11 @@ protected:
 public:
 	COutputEvent m_OnIgnite;
 
-
+#if defined ( PORTAL2 )
+	COutputEvent m_OnCameraCapture;	// captured by weapon_camera
+	COutputEvent m_OnCameraRelease; // put back into the world by weapon_camera
+	COutputEvent m_OnFizzled;		// Fizzled by a fizzler
+#endif // PORTAL2 
 
 private:
 	CStudioHdr			*m_pStudioHdr;
@@ -503,7 +536,9 @@ inline void CBaseAnimating::ResetSequence(int nSequence)
 
 inline float CBaseAnimating::GetPlaybackRate() const
 {
-
+#ifdef PORTAL2
+	return m_flPlaybackRate * (1.0f / sqrt(GetModelScale()));
+#endif // PORTAL2
 
 	// Slow the animation while partially frozen
 	return m_flPlaybackRate * clamp( 1.0f - m_flFrozen, 0.0f, 1.0f );
@@ -562,3 +597,4 @@ EXTERN_SEND_TABLE(DT_BaseAnimating);
 #define ANIMATION_PLAYBACKRATE_BITS		8	// default playback rate, only used on leading edge detect sequence changes
 
 #endif // BASEANIMATING_H
+

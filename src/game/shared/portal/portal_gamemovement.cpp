@@ -662,21 +662,21 @@ int CPortalGameMovement::CheckStuck( void )
 	}
 }
 
-void CPortalGameMovement::SetGroundEntity( trace_t *pm )
+void CPortalGameMovement::SetGroundEntity(trace_t* pm)
 {
-#ifndef CLIENT_DLL
-	if ( !player->GetGroundEntity() && pm && pm->m_pEnt )
+#if !defined(CLIENT_DLL) && !defined(PORTAL2)
+	if (!player->GetGroundEntity() && pm && pm->m_pEnt)
 	{
-		IGameEvent *event = gameeventmanager->CreateEvent( "portal_player_touchedground" );
-		if ( event )
+		IGameEvent* event = gameeventmanager->CreateEvent("portal_player_touchedground");
+		if (event)
 		{
-			event->SetInt( "userid", player->GetUserID() );
-			gameeventmanager->FireEvent( event );
+			event->SetInt("userid", player->GetUserID());
+			gameeventmanager->FireEvent(event);
 		}
 	}
 #endif
 
-	BaseClass::SetGroundEntity( pm );
+	BaseClass::SetGroundEntity(pm);
 }
 
 void CPortalGameMovement::TracePlayerBBox( const Vector& start, const Vector& end, unsigned int fMask, int collisionGroup, trace_t& pm )

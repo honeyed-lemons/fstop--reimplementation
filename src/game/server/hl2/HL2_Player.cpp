@@ -111,6 +111,42 @@ ConVar sv_stickysprint("sv_stickysprint", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBO
 #define	FLASH_DRAIN_TIME	 1.1111	// 100 units / 90 secs
 #define	FLASH_CHARGE_TIME	 50.0f	// 100 units / 2 secs
 
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CC_MWheel_Up(void)
+{
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	if (pPlayer == NULL)
+		return;
+
+	CBaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+	if (pWeapon == NULL)
+		return;
+
+	pWeapon->OnMouseWheel(MWHEEL_UP);
+}
+
+static ConCommand mwheel_up("mwheel_up", CC_MWheel_Up, "Sends a mousewheel message to the currently held weapon", 0);
+
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CC_MWheel_Down(void)
+{
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	if (pPlayer == NULL)
+		return;
+
+	CBaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+	if (pWeapon == NULL)
+		return;
+
+	pWeapon->OnMouseWheel(MWHEEL_DOWN);
+}
+
+static ConCommand mwheel_down("mwheel_down", CC_MWheel_Down, "Sends a mousewheel message to the currently held weapon", 0);
+
 
 //==============================================================================================
 // CAPPED PLAYER PHYSICS DAMAGE TABLE
@@ -429,7 +465,9 @@ void CHL2_Player::EquipSuit( bool bPlayEffects )
 
 	if ( bPlayEffects == true )
 	{
-		StartAdmireGlovesAnimation();
+	#ifndef PORTAL2
+			StartAdmireGlovesAnimation();
+	#endif // PORTAL2
 	}
 }
 

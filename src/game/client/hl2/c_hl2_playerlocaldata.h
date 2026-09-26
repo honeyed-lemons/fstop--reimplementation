@@ -45,7 +45,10 @@ public:
 	float	m_flFlashBattery;
 	Vector	m_vecLocatorOrigin;
 #endif
-
+#ifdef PORTAL2
+	int		m_nLocatorEntityIndices[16];
+	bool	m_bPlacingPhoto;
+#endif
 	// Ladder related data
 	EHANDLE			m_hLadder;
 	LadderMove_t	m_LadderMove;

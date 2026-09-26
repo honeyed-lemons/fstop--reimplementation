@@ -402,6 +402,31 @@ public:
 	// Specific interactions
 	void	HandleAnyCollisionInteractions( int index, gamevcollisionevent_t *pEvent );
 
+#ifdef PORTAL2
+	START_BRANCHING_SINGLETON_DEFINITION(CPhotoPlacementQuery)
+	{
+	public:
+		struct PropPlacementData_t
+		{
+			Vector	vecOffset;
+			QAngle	qAlignAngles;
+			bool	bAlignOnlyVertical;
+			bool	bAlignOnlyHorizontal;
+			bool	bPinned;
+		};
+
+		virtual bool GetPlacementPosition_NoHelper(CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & positionOut, QAngle & anglesOut);
+		bool GetPropPosition(PropPlacementData_t & propData, CaptureInfo_t & captureInfo, CheckPlacementData_t & placementData, Vector & positionOut, QAngle & anglesOut);
+		bool ValidSurface(const Vector & vecNormal, PropPlacementData_t & propData);
+		bool FindPlacementPosition(const Vector & vecEndPos, float flAxisLength, float flCounterAxisLength, const Vector & vecDirection, Vector * vecOut);
+
+	};
+	END_BRANCHING_SINGLETON_DEFINITION(CPhotoPlacementQuery);
+
+	string_t GetPhysOverrideScript(void) { return m_iszOverrideScript; }
+	float GetMassScale(void) { return m_massScale; }
+#endif // PORTAL2
+
 private:
 	// Compute impulse to apply to the enabled entity.
 	void ComputeEnablingImpulse( int index, gamevcollisionevent_t *pEvent );
@@ -462,6 +487,9 @@ extern ConVar func_breakdmg_bullet;
 extern ConVar func_breakdmg_club;
 extern ConVar func_breakdmg_explosive;
 
-
+#ifdef PORTAL2
+bool UTIL_PropIsMotionDisabled(CBaseEntity* pObject);
+void UTIL_SetPropMotionDisabled(CBaseEntity* pObject);
+#endif // PORTAL2
 
 #endif // PROPS_H

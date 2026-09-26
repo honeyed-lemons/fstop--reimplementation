@@ -34,6 +34,10 @@
 #include "ai_speech.h"		// For expressors, vcd playing
 #include "sceneentity.h"	// has the VCD precache function
 
+#ifdef PORTAL2
+#include "portal2/weapon_camera.h"
+#endif // PORTAL2
+
 // Max mass the player can lift with +use
 #define PORTAL_PLAYER_MAX_LIFT_MASS 85
 #define PORTAL_PLAYER_MAX_LIFT_SIZE 128
@@ -154,7 +158,7 @@ SendPropExclude( "DT_BaseFlex", "m_blinktoggle" ),
 
 // portal_playeranimstate and clientside animation takes care of these on the client
 SendPropExclude( "DT_ServerAnimationData" , "m_flCycle" ),	
-SendPropExclude( "DT_AnimTimeMustBeFirst" , "m_flAnimTime" ),
+SendPropExclude("DT_AnimTimeMustBeFirst", "m_flAnimTime"),
 
 
 SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 0), 11, SPROP_CHANGES_OFTEN ),
@@ -167,7 +171,7 @@ SendPropEHandle( SENDINFO( m_pHeldObjectPortal ) ),
 SendPropBool( SENDINFO( m_bPitchReorientation ) ),
 SendPropEHandle( SENDINFO( m_hPortalEnvironment ) ),
 SendPropEHandle( SENDINFO( m_hSurroundingLiquidPortal ) ),
-SendPropBool( SENDINFO( m_bSuppressingCrosshair ) ),
+//SendPropBool( SENDINFO( m_bSuppressingCrosshair ) ),
 
 SendPropExclude( "DT_BaseAnimating", "m_flPoseParameter" ),
 
@@ -208,6 +212,9 @@ BEGIN_DATADESC( CPortal_Player )
 	DEFINE_FIELD( m_hSurroundingLiquidPortal, FIELD_EHANDLE ),
 	//DEFINE_FIELD ( m_PlayerAnimState, CPortalPlayerAnimState ),
 	//DEFINE_FIELD ( m_StatsThisLevel, PortalPlayerStatistics_t ),
+#ifdef PORTAL2
+	DEFINE_EMBEDDED(m_PhotoInventory),
+#endif // PORTAL2
 
 	DEFINE_EMBEDDEDBYREF( m_pExpresser ),
 
@@ -303,6 +310,10 @@ void CPortal_Player::Precache( void )
 	PrecacheModel( g_pszChellModel );
 
 	PrecacheScriptSound( "NPC_Citizen.die" );
+
+#ifdef PORTAL2
+	PrecacheScriptSound("PhotoInventory.Erased");
+#endif // PORTAL2
 }
 
 void CPortal_Player::CreateSounds()
@@ -379,6 +390,19 @@ void CPortal_Player::GiveAllItems( void )
 		pPortalGun->SetCanFirePortal1();
 		pPortalGun->SetCanFirePortal2();
 	}
+
+#ifdef PORTAL2
+	GiveNamedItem("weapon_camera");
+	GiveNamedItem("weapon_placement");
+
+	// Fully upgrade the camera
+	CWeaponCamera* pCamera = dynamic_cast<CWeaponCamera*> (Weapon_OwnsThisType("weapon_camera"));
+	if (pCamera)
+	{
+		pCamera->SetZoomAbility(true);
+		pCamera->SetScaleAbility(true);
+	}
+#endif // PORTAL2
 }
 
 void CPortal_Player::GiveDefaultItems( void )
@@ -456,6 +480,11 @@ void CPortal_Player::NotifySystemEvent(CBaseEntity *pNotify, notify_system_event
 void CPortal_Player::OnRestore( void )
 {
 	BaseClass::OnRestore();
+
+#ifdef PORTAL2
+	m_PhotoInventory.OnRestore();
+#endif // PORTAL2
+
 	if ( m_pExpresser )
 	{
 		m_pExpresser->SetOuter ( this );
@@ -928,75 +957,71 @@ void CPortal_Player::DoAnimationEvent( PlayerAnimEvent_t event, int nData )
 	TE_PlayerAnimEvent( this, event, nData );	// Send to any clients who can see this guy.
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Override setup bones so that is uses the render angles from
-//			the Portal animation state to setup the hitboxes.
-//-----------------------------------------------------------------------------
-void CPortal_Player::SetupBones( matrix3x4a_t *pBoneToWorld, int boneMask )
+void CPortal_Player::SetupBones(matrix3x4a_t* pBoneToWorld, int boneMask)
 {
-	VPROF_BUDGET( "CBaseAnimating::SetupBones", VPROF_BUDGETGROUP_SERVER_ANIM );
+	VPROF_BUDGET("CBaseAnimating::SetupBones", VPROF_BUDGETGROUP_SERVER_ANIM);
 
 	// Set the mdl cache semaphore.
 	MDLCACHE_CRITICAL_SECTION();
 
 	// Get the studio header.
-	Assert( GetModelPtr() );
-	CStudioHdr *pStudioHdr = GetModelPtr( );
+	Assert(GetModelPtr());
+	CStudioHdr* pStudioHdr = GetModelPtr();
 
 	Vector pos[MAXSTUDIOBONES];
 	QuaternionAligned q[MAXSTUDIOBONES];
 
 	// Adjust hit boxes based on IK driven offset.
-	Vector adjOrigin = GetAbsOrigin() + Vector( 0, 0, m_flEstIkOffset );
+	Vector adjOrigin = GetAbsOrigin() + Vector(0, 0, m_flEstIkOffset);
 
 	// FIXME: pass this into Studio_BuildMatrices to skip transforms
 	CBoneBitList boneComputed;
-	if ( m_pIk )
+	if (m_pIk)
 	{
 		m_iIKCounter++;
-		m_pIk->Init( pStudioHdr, GetAbsAngles(), adjOrigin, gpGlobals->curtime, m_iIKCounter, boneMask );
-		GetSkeleton( pStudioHdr, pos, q, boneMask );
+		m_pIk->Init(pStudioHdr, GetAbsAngles(), adjOrigin, gpGlobals->curtime, m_iIKCounter, boneMask);
+		GetSkeleton(pStudioHdr, pos, q, boneMask);
 
-		m_pIk->UpdateTargets( pos, q, pBoneToWorld, boneComputed );
-		CalculateIKLocks( gpGlobals->curtime );
-		m_pIk->SolveDependencies( pos, q, pBoneToWorld, boneComputed );
+		m_pIk->UpdateTargets(pos, q, pBoneToWorld, boneComputed);
+		CalculateIKLocks(gpGlobals->curtime);
+		m_pIk->SolveDependencies(pos, q, pBoneToWorld, boneComputed);
 	}
 	else
 	{
-		GetSkeleton( pStudioHdr, pos, q, boneMask );
+		GetSkeleton(pStudioHdr, pos, q, boneMask);
 	}
 
-	CBaseAnimating *pParent = dynamic_cast< CBaseAnimating* >( GetMoveParent() );
-	if ( pParent )
+	CBaseAnimating* pParent = dynamic_cast<CBaseAnimating*>(GetMoveParent());
+	if (pParent)
 	{
 		// We're doing bone merging, so do special stuff here.
-		CBoneCache *pParentCache = pParent->GetBoneCache();
-		if ( pParentCache )
+		CBoneCache* pParentCache = pParent->GetBoneCache();
+		if (pParentCache)
 		{
-			BuildMatricesWithBoneMerge( 
-				pStudioHdr, 
+			BuildMatricesWithBoneMerge(
+				pStudioHdr,
 				m_PlayerAnimState->GetRenderAngles(),
-				adjOrigin, 
-				pos, 
-				q, 
-				pBoneToWorld, 
-				pParent, 
-				pParentCache );
+				adjOrigin,
+				pos,
+				q,
+				pBoneToWorld,
+				pParent,
+				pParentCache);
 
 			return;
 		}
 	}
 
-	Studio_BuildMatrices( 
-		pStudioHdr, 
+	Studio_BuildMatrices(
+		pStudioHdr,
 		m_PlayerAnimState->GetRenderAngles(),
-		adjOrigin, 
-		pos, 
-		q, 
+		adjOrigin,
+		pos,
+		q,
 		-1,
 		GetModelScale(),
 		pBoneToWorld,
-		boneMask );
+		boneMask);
 }
 
 
@@ -1895,16 +1920,39 @@ int CPortal_Player::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	return 1;
 }
 
-
-void CPortal_Player::ForceDuckThisFrame( void )
+//-----------------------------------------------------------------------------
+// Purpose: +zoom suit zoom
+//-----------------------------------------------------------------------------
+void CPortal_Player::StartZooming(void)
 {
-	if( m_Local.m_bDucked != true )
+#ifdef PORTAL2
+	m_HL2Local.m_bZooming = true;
+#else
+	BaseClass::StartZooming();
+#endif // PORTAL2
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CPortal_Player::StopZooming(void)
+{
+#ifdef PORTAL2
+	m_HL2Local.m_bZooming = false;
+#else
+	BaseClass::StopZooming();
+#endif // PORTAL2
+}
+
+void CPortal_Player::ForceDuckThisFrame(void)
+{
+	if (m_Local.m_bDucked != true)
 	{
 		//m_Local.m_bDucking = false;
 		m_Local.m_bDucked = true;
-		ForceButtons( IN_DUCK );
-		AddFlag( FL_DUCKING );
-		SetVCollisionState( GetAbsOrigin(), GetAbsVelocity(), VPHYS_CROUCH );
+		ForceButtons(IN_DUCK);
+		AddFlag(FL_DUCKING);
+		SetVCollisionState(GetAbsOrigin(), GetAbsVelocity(), VPHYS_CROUCH);
 	}
 }
 
@@ -2332,3 +2380,296 @@ CON_COMMAND( startneurotoxins, "Starts the nerve gas timer." )
 	if( pPlayer )
 		pPlayer->SetNeuroToxinDamageTime( fCoundownTime );
 }
+
+#ifdef PORTAL2
+
+void CPortal_Player::SetPlacingPhoto(bool bPlacing)
+{
+	m_HL2Local.m_bPlacingPhoto = bPlacing;
+}
+
+void CPortal_Player::ItemPostFrame(void)
+{
+	BaseClass::ItemPostFrame();
+
+	// Update whether or not we're placing photos
+	CBaseCombatWeapon* pWeapon = GetActiveWeapon();
+	if (pWeapon == NULL)
+	{
+		SetPlacingPhoto(false);
+	}
+}
+
+// Need player inventory settings
+void CPortal_Player::OnPhotoAdded(int nIndex)
+{
+	if (nIndex < 0 || nIndex > 2)
+		return;
+
+	// m_HL2Local.m_bHasPhotoInInventory.GetForModify( nIndex ) = true;
+}
+
+void CPortal_Player::OnPhotoRemoved(int nIndex)
+{
+	if (nIndex < 0 || nIndex > 2)
+		return;
+
+	// m_HL2Local.m_bHasPhotoInInventory.GetForModify( nIndex ) = false;
+}
+
+void CPortal_Player::SetSelectedPhoto(int nIndex)
+{
+	Assert(nIndex >= 0 && nIndex < 3);
+	if (nIndex < 0 || nIndex >= 3)
+		return;
+
+	// m_HL2Local.m_nSelectedPhoto = nIndex;
+}
+
+int CPortal_Player::GetSelectedPhoto(void)
+{
+	return 0;
+	// return m_HL2Local.m_nSelectedPhoto;
+}
+
+void CPortal_Player::ClearPhotos(void)
+{
+	/*
+	m_HL2Local.m_nSelectedPhoto = -1;
+	m_HL2Local.m_bHasPhotoInInventory.GetForModify(0) = false;
+	m_HL2Local.m_bHasPhotoInInventory.GetForModify(1) = false;
+	m_HL2Local.m_bHasPhotoInInventory.GetForModify(2) = false;
+	*/
+}
+
+void CPortal_Player::StripPhotos(bool bNotifyPlayer /*= true*/)
+{
+	// Let the player know we just stripped their photos from them
+	if (bNotifyPlayer)
+	{
+		if (Photo_Count())
+		{
+			EmitSound("PhotoInventory.Erased");
+			FlashInventory(2.0f, FLASH_INVENTORY_STRIPPED);
+		}
+	}
+
+	// Stop having a selected photo
+	ClearPhotos();
+
+	// Clear all photos
+	Photo_Purge();
+
+	CBaseCombatWeapon* pWeapon = GetActiveWeapon();
+	if (pWeapon && FClassnameIs(pWeapon, "weapon_placement"))
+	{
+		// Attempt to go back to the camera, but holster failing that
+		CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+		if (pPlayer->SwitchToNextBestWeapon(pWeapon) == false)
+		{
+			pWeapon->Holster(NULL);
+		}
+	}
+}
+
+void CPortal_Player::FlashDenyIndicator(float flDuration, unsigned char nType)
+{
+	// we've been denied the pickup, display a hud icon to show that
+	CSingleUserRecipientFilter user(this);
+	user.MakeReliable();
+
+	UserMessageBegin(user, "IndicatorFlash");
+	WRITE_BYTE(nType);
+	WRITE_FLOAT(flDuration);
+	MessageEnd();
+
+	// Play the denial noise
+	PlayUseDenySound();
+}
+
+void CPortal_Player::ControlHelperAnimate(unsigned char nActiveIcon, bool bClear /*= false*/)
+{
+	// we've been denied the pickup, display a hud icon to show that
+	CSingleUserRecipientFilter user(this);
+	user.MakeReliable();
+
+	UserMessageBegin(user, "ControlHelperAnimate");
+	WRITE_BYTE((unsigned char)bClear);
+	WRITE_BYTE(nActiveIcon);
+	MessageEnd();
+}
+
+void CPortal_Player::FlashInventory(float flDuration, unsigned char nType)
+{
+	// we've been denied the pickup, display a hud icon to show that
+	CSingleUserRecipientFilter user(this);
+	user.MakeReliable();
+
+	UserMessageBegin(user, "InventoryFlash");
+	WRITE_FLOAT(flDuration);
+	WRITE_BYTE(nType);
+	// WRITE_BYTE( m_HL2Local.m_bHasPhotoInInventory[0] );
+	// WRITE_BYTE( m_HL2Local.m_bHasPhotoInInventory[1] );
+	// WRITE_BYTE( m_HL2Local.m_bHasPhotoInInventory[2] );
+	MessageEnd();
+
+	if (nType == FLASH_INVENTORY_FULL)
+	{
+		// Play the denial noise
+		PlayUseDenySound();
+	}
+}
+
+void CPortal_Player::Flash(float flDuration, const Vector& vecPosition)
+{
+	// we've been denied the pickup, display a hud icon to show that
+	CSingleUserRecipientFilter user(this);
+	user.MakeReliable();
+
+	UserMessageBegin(user, "Flash");
+	WRITE_FLOAT(flDuration);
+	WRITE_FLOAT(vecPosition.x);
+	WRITE_FLOAT(vecPosition.y);
+	WRITE_FLOAT(vecPosition.z);
+	MessageEnd();
+}
+
+void CPortal_Player::InitialSpawn(void)
+{
+	BaseClass::InitialSpawn();
+
+	// Clear our all photos
+	if (gpGlobals->eLoadType == MapLoad_NewGame)
+	{
+		Photo_Purge();
+	}
+
+}
+
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CPortal_Player::UpdateLocatorEntityIndices(int* pIndices, int nNumIndices)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		if (i >= nNumIndices)
+		{
+			m_HL2Local.m_nLocatorEntityIndices.GetForModify(i) = -1;
+		}
+		else
+		{
+			m_HL2Local.m_nLocatorEntityIndices.GetForModify(i) = pIndices[i];
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CC_Next_Photo(void)
+{
+	// FIXME: This code is now obsolete
+	return;
+
+	if (Photo_Count() == 0)
+		return;
+
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	if (pPlayer == NULL)
+		return;
+
+	CBaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+	if (pWeapon == NULL)
+		return;
+
+	// If we're cycling but not in placement mode, then swap over to it but don't cycle
+	if (FClassnameIs(pWeapon, "weapon_camera"))
+	{
+		pPlayer->SwitchToNextBestWeapon(pWeapon);
+		return;
+	}
+
+	// Otherwise cycle and change
+	if (Photo_Count() > 1)
+	{
+		// Cycle our photos
+		Photo_Cycle(true);
+
+		pWeapon->Reload();
+	}
+}
+
+static ConCommand next_photos("next_photo", CC_Next_Photo, "Next photo in our inventory (if any)", 0);
+
+void SwitchToPhoto(int nIndex)
+{
+	// FIXME: This code is now obsolete
+	return;
+
+	if (Photo_Count() == 0)
+		return;
+
+	// Must be a valid photo
+	if (Photo_IsValid(nIndex) == false)
+		return;
+
+	CPortal_Player* pPlayer = (CPortal_Player*)UTIL_GetLocalPlayer();
+	if (pPlayer == NULL)
+		return;
+
+	CBaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+	if (pWeapon == NULL)
+		return;
+
+	bool bPlayReload = (pPlayer->GetSelectedPhoto() != nIndex);
+
+	// Take this as the new selection
+	pPlayer->SetSelectedPhoto(nIndex);
+
+	// If we're cycling but not in placement mode, then swap over to it
+	if (FClassnameIs(pWeapon, "weapon_camera"))
+	{
+		pPlayer->SwitchToNextBestWeapon(pWeapon);
+	}
+	else
+	{
+		// Don't swap if it's our already selected photo
+		if (bPlayReload)
+		{
+			pWeapon->Reload();
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CC_Select_Photo1(void)
+{
+	// SwitchToPhoto( 0 );
+}
+
+static ConCommand select_photo1("select_photo1", CC_Select_Photo1, "Select photograph in slot 1", 0);
+
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CC_Select_Photo2(void)
+{
+	// SwitchToPhoto( 1 );
+}
+
+static ConCommand select_photo2("select_photo2", CC_Select_Photo2, "Select photograph in slot 2", 0);
+
+//------------------------------------------------------------------------------
+// Purpose: 
+//------------------------------------------------------------------------------
+void CC_Select_Photo3(void)
+{
+	// SwitchToPhoto( 2 );
+}
+
+static ConCommand select_photo3("select_photo3", CC_Select_Photo3, "Select photograph in slot 3", 0);
+
+#endif // PORTAL2

@@ -2256,7 +2256,8 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 
 //	DEFINE_FIELD( m_bSentLastFrame, FIELD_INTEGER ),
 
-
+	DEFINE_FIELD(m_PreStasisMoveType, FIELD_INTEGER),
+	DEFINE_FIELD(m_bIsInStasis, FIELD_BOOLEAN),
 
 	DEFINE_FIELD( m_hGroundEntity, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_flGroundChangeTime, FIELD_TIME ),
@@ -3522,6 +3523,166 @@ int CBaseEntity::IsDormant( void )
 	return IsEFlagSet( EFL_DORMANT );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Place the entity into stasis
+//-----------------------------------------------------------------------------
+void CBaseEntity::RebaseTimeEntriesForStasis(bool bEnteringStasis)
+{
+	// Go through all our think and context think functions
+	RebaseThinkTicks(bEnteringStasis);
+
+	// Go through all our internal time fields
+	datamap_t* dmap = GetDataDescMap();
+	while (dmap)
+	{
+		int fields = dmap->dataNumFields;
+		for (int i = 0; i < fields; i++)
+		{
+			typedescription_t* dataDesc = &dmap->dataDesc[i];
+
+			switch (dataDesc->fieldType)
+			{
+			case FIELD_TIME:
+			{
+				float flTime = (*(float*)((char*)this + dataDesc->fieldOffset));
+
+				// Only fix-up useful times
+				if (bEnteringStasis && flTime <= 0.0f)
+					break;
+
+				if (bEnteringStasis)
+				{
+					flTime -= gpGlobals->curtime;
+				}
+				else
+				{
+					flTime += gpGlobals->curtime;
+				}
+
+				// Put it back
+				(*(float*)((char*)this + dataDesc->fieldOffset)) = flTime;
+				break;
+			}
+
+			// Tick is like time in that it needs to be rebased
+			case FIELD_TICK:
+			{
+				int nTick = (*(int*)((char*)this + dataDesc->fieldOffset));
+
+				if (bEnteringStasis && nTick == TICK_NEVER_THINK)
+					break;
+
+				int nBaseTick = TIME_TO_TICKS(gpGlobals->curtime);
+				if (bEnteringStasis)
+				{
+					nTick -= nBaseTick;
+				}
+				else
+				{
+					nTick += nBaseTick;
+				}
+
+				// Put it back
+				(*(int*)((char*)this + dataDesc->fieldOffset)) = nTick;
+				break;
+			}
+			}
+		}
+
+		dmap = dmap->baseMap;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Place the entity into stasis
+//-----------------------------------------------------------------------------
+void CBaseEntity::EnterStasis(void)
+{
+	// Early out, if we've nulled our values already then we're just 
+	// stomping the recovery values. 
+	if (m_bIsInStasis)
+	{
+		Assert(0);
+		return;
+	}
+
+#ifndef TERROR								   // terror doesn't have cai_basenpcs. this will produce a dll load error in linux
+	// Try and exit a scripted sequence, if there is one
+	CAI_BaseNPC* pNPC = dynamic_cast<CAI_BaseNPC*>(this);
+	if (pNPC)
+	{
+		pNPC->ExitScriptedSequence();
+	}
+#endif
+
+	m_PreStasisMoveType = GetMoveType();
+
+	// Stop us doing all thinking
+	AddEFlags(EFL_NO_THINK_FUNCTION);
+	CheckHasThinkFunction();
+
+	// NOTE: We do NOT adjust the next think tick here because we actually need to store that until we're out of stasis
+
+	if (!edict())
+		return;
+
+	AddSolidFlags(FSOLID_NOT_SOLID);
+	SetMoveType(MOVETYPE_NONE);
+
+	IPhysicsObject* pObj = VPhysicsGetObject();
+	if (pObj)
+	{
+		pObj->EnableCollisions(false);
+		pObj->Sleep();
+	}
+
+	AddEffects(EF_NODRAW);
+
+	SetNextThink(TICK_NEVER_THINK);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Remove the entity from stasis
+//-----------------------------------------------------------------------------
+void CBaseEntity::LeaveStasis(void)
+{
+	if (!edict())
+		return;
+
+	CheckHasThinkFunction((GetNextThink() == TICK_NEVER_THINK) ? false : true);
+
+	RemoveSolidFlags(FSOLID_NOT_SOLID);
+	SetMoveType(m_PreStasisMoveType);
+	RemoveEffects(EF_NODRAW);
+
+	IPhysicsObject* pObj = VPhysicsGetObject();
+	if (pObj)
+	{
+		pObj->EnableCollisions(true);
+		pObj->Wake();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Entities 'in stasis' don't draw, collide, think, or give/accept entity I/O.
+//-----------------------------------------------------------------------------
+void CBaseEntity::SetStasis(bool bStasis)
+{
+	// Walk the datamap and fix up all absolute time entries to delta values, or vice versa
+	RebaseTimeEntriesForStasis(bStasis);
+
+	if (bStasis)
+	{
+		EnterStasis();
+	}
+	else
+	{
+		LeaveStasis();
+	}
+
+	m_bIsInStasis = bStasis;
+}
+
 bool CBaseEntity::IsInWorld( void ) const
 {  
 	if ( !edict() )
@@ -4353,6 +4514,12 @@ ConVar ent_messages_draw( "ent_messages_draw", "0", FCVAR_CHEAT, "Visualizes all
 //-----------------------------------------------------------------------------
 bool CBaseEntity::AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID )
 {
+	if (m_bIsInStasis)
+	{
+		DevMsg(2, "Input %s for %s entity dropped because the entity is in stasis.\n", szInputName, GetClassname());
+		return false;
+	}	
+
 	if ( ent_messages_draw.GetBool() )
 	{
 		if ( pCaller != NULL )

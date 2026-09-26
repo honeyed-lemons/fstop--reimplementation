@@ -40,7 +40,9 @@
 #endif
 #include "matchmaking/imatchframework.h"
 
-
+#ifdef PORTAL2
+#include "c_basehlplayer.h"
+#endif // PORTAL2
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -366,6 +368,13 @@ void ClientModeShared::OverrideView( CViewSetup *pSetup )
 //-----------------------------------------------------------------------------
 bool ClientModeShared::ShouldDrawEntity(C_BaseEntity *pEnt)
 {
+#ifdef PORTAL2
+	// Don't draw the viewmodel while zoomed in
+	C_BaseHLPlayer* pHLPlayer = (C_BaseHLPlayer*)C_BasePlayer::GetLocalPlayer();
+	if (pHLPlayer && pHLPlayer->m_HL2Local.m_bZooming)
+		return false;
+#endif // PORTAL2
+
 	return true;
 }
 

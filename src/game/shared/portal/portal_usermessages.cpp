@@ -53,4 +53,12 @@ void RegisterUserMessages()
 	usermessages->Register( "CloseCaptionDirect", -1 ); // Show a forced caption (by string id number)(duration in 10th of a second)
 	usermessages->Register( "CurrentTimescale", 4 );	// Send one float for the new timescale
 	usermessages->Register( "DesiredTimescale", 13 );	// Send timescale and some blending vars
+
+#ifdef PORTAL2
+	usermessages->Register("InventoryFlash", sizeof(float) + 1);
+	usermessages->Register("IndicatorFlash", sizeof(float) + 1);
+	usermessages->Register("ControlHelperAnimate", 2);
+	usermessages->Register("TakePhoto", sizeof(long) + sizeof(uint8));
+	usermessages->Register("Flash", sizeof(float) + sizeof(Vector));
+#endif // PORTAL2
 }

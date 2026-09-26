@@ -5103,6 +5103,11 @@ void CTriggerAutoCrouch::EndTouch( CBaseEntity *pOther )
 	}
 }
 
+BEGIN_DATADESC(CTriggerCallback)
+END_DATADESC()
+
+
+LINK_ENTITY_TO_CLASS(trigger_callback, CTriggerCallback);
 
 //----------------------------------------------------------------------------------
 // Purpose:

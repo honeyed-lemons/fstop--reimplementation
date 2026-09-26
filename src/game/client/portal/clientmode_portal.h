@@ -32,6 +32,7 @@ public:
 
 					ClientModePortalNormal();
 	virtual			~ClientModePortalNormal();
+	virtual bool	ShouldDrawViewModel();
 
 	virtual void	Init();
 	virtual void	InitViewport();

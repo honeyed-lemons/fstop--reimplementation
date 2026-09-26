@@ -372,7 +372,8 @@ enum Collision_Group_t
 	COLLISION_GROUP_NPC_ACTOR,		// Used so NPCs in scripts ignore the player.
 	COLLISION_GROUP_NPC_SCRIPTED,	// USed for NPCs in scripts that should not collide with each other
 	COLLISION_GROUP_PZ_CLIP,
-
+	COLLISION_GROUP_CAMERA_SOLID,
+	COLLISION_GROUP_PLACEMENT_SOLID,
 
 
 	COLLISION_GROUP_DEBRIS_BLOCK_PROJECTILE, // Only collides with bullets

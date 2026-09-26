@@ -44,7 +44,10 @@
 #include "vehicle_base.h"
 #include "tier0/icommandline.h"
 
-
+#ifdef PORTAL2
+#include "prop_portal.h"
+#include "triggers.h"
+#endif // PORTAL2
 
 #include "vstdlib/ikeyvaluessystem.h"
 
@@ -2568,6 +2571,7 @@ IMPLEMENT_SERVERCLASS_ST( CPhysicsProp, DT_PhysicsProp )
 	//SendPropExclude( "DT_CollisionProperty", "m_vecMaxs" ),
 
 	//SendPropExclude( "DT_ServerAnimationData" , "m_flCycle" ),
+	SendPropExclude("DT_AnimTimeMustBeFirst", "m_flAnimTime"),
 
 	//--------------------------------------------------------------------------------------------------------
 
@@ -3863,6 +3867,266 @@ bool PropBreakableCapEdictsOnCreateAll(int modelindex, IPhysicsObject *pPhysics,
 	return ( !numToCreate || ( engine->GetEntityCount() + numToCreate + BREATHING_ROOM < MAX_EDICTS ) );
 }
 
+#ifdef PORTAL2
+
+//
+// Placement query
+//
+
+//
+// TODO: Cache all this off, it won't change!
+// 
+
+bool UTIL_GetPropPlacementData(const char* lpszModelName, CPhysicsProp::CPhotoPlacementQuery::PropPlacementData_t& propData)
+{
+	int nModelIndex = modelinfo->GetModelIndex(lpszModelName);
+	const model_t* model = modelinfo->GetModel(nModelIndex);
+
+	// FIXME: Cache this off!
+	MEM_ALLOC_CREDIT();
+	KeyValues* modelKeyValues = new KeyValues("");
+	if (modelKeyValues->LoadFromBuffer(lpszModelName, modelinfo->GetModelKeyValueText(model)) == false)
+		return false;
+
+	KeyValues* pkvPropData = modelKeyValues->FindKey("prop_alignment");
+	if (pkvPropData == NULL)
+		return false;
+
+	// Parse the origin offset
+	char const* pszBase = pkvPropData->GetString("offset");
+	if (pszBase == NULL || pszBase[0] == NULL)
+	{
+		propData.vecOffset = vec3_origin;
+	}
+	else
+	{
+		UTIL_StringToVector(propData.vecOffset.Base(), pszBase);
+	}
+
+	// Parse our the alignment angles
+	pszBase = pkvPropData->GetString("orientation");
+	if (pszBase == NULL || pszBase[0] == NULL)
+	{
+		propData.qAlignAngles = QAngle(90, 0, 0);
+	}
+	else
+	{
+		UTIL_StringToVector(propData.qAlignAngles.Base(), pszBase);
+	}
+
+	// Start with no restrictions
+	propData.bAlignOnlyHorizontal = false;
+	propData.bAlignOnlyVertical = false;
+	propData.bPinned = false;
+
+	// Parse any surface normal restrictions
+	pszBase = pkvPropData->GetString("restrictsurface");
+	if (pszBase)
+	{
+		if (FStrEq(pszBase, "vertical"))
+		{
+			propData.bAlignOnlyVertical = true;
+		}
+		else if (FStrEq(pszBase, "horizontal"))
+		{
+			propData.bAlignOnlyHorizontal = true;
+		}
+	}
+
+	// Parse any surface normal restrictions
+	pszBase = pkvPropData->GetString("pinned");
+	if (pszBase)
+	{
+		propData.bPinned = (atoi(pszBase) != 0);
+	}
+
+	// Done
+	modelKeyValues->deleteThis();
+	return true;
+}
+
+
+extern void UTIL_FailurePlacement(const Vector& vecEndPoint, Vector* pOriginOut, QAngle* pAnglesOut);
+
+bool CPhysicsProp::CPhotoPlacementQuery::ValidSurface(const Vector& vecNormal, PropPlacementData_t& propData)
+{
+	// Never valid
+	if (vecNormal == vec3_origin)
+		return false;
+
+	// Must be a veritcal surface (wall)
+	if (propData.bAlignOnlyVertical && (fabs(vecNormal[2]) > 0.05f))
+		return false;
+
+	// Must be a horizontal surface (floor)
+	if (propData.bAlignOnlyHorizontal && (vecNormal.z < 0.95f))
+		return false;
+
+	return true;
+}
+
+bool CPhysicsProp::CPhotoPlacementQuery::GetPropPosition(PropPlacementData_t& propData,
+	CaptureInfo_t& captureInfo,
+	CheckPlacementData_t& placementData,
+	Vector& positionOut,
+	QAngle& anglesOut)
+{
+	Vector vecNormal = placementData.Trace.plane.normal;
+	Vector vecPoint = placementData.Trace.endpos;
+
+	if (ValidSurface(vecNormal, propData))
+	{
+		// If we have a valid origin, align to it
+		matrix3x4_t matSurface;
+		QAngle vecEndAngles;
+		VectorAngles(vecNormal, vecEndAngles);
+		AngleMatrix(vecEndAngles, vecPoint, matSurface);
+
+		QAngle vecFinalAngles = TransformAnglesToWorldSpace(propData.qAlignAngles, matSurface);
+
+		positionOut = vecPoint;
+		anglesOut = vecFinalAngles;
+	}
+	else if (propData.bPinned)
+	{
+		// If we're meant to be pinned, we're invalid
+		return false;
+	}
+
+	return true;
+}
+
+bool CPhysicsProp::CPhotoPlacementQuery::FindPlacementPosition(const Vector& vecEndPos, float flAxisLength, float flCounterAxisLength, const Vector& vecDirection, Vector* vecOut)
+{
+	Vector vecStart;
+	Ray_t ray;
+	trace_t tr;
+
+	// Trace from the center, up
+	vecStart = vecEndPos + (vecDirection * flAxisLength);
+	ray.Init(vecEndPos, vecStart);
+	UTIL_Portal_TraceRay(ray, MASK_SOLID, NULL, COLLISION_GROUP_NONE, &tr);
+
+	// NDebugOverlay::VertArrow( tr.startpos, tr.endpos, 4.0f, 0, 255, 0, 8, true, 0.05f );
+
+	// Find how far we would have moved to bump away from the surface
+	float flPosOffset = ((vecDirection * flAxisLength) * (1.0f - tr.fraction)).Length();
+
+	// Find our new center after that bump
+	Vector vecPostOffset;
+
+	if (tr.fraction <= 1.0f - FLT_EPSILON)
+	{
+		vecPostOffset = vecEndPos - (vecDirection * (flPosOffset + flCounterAxisLength));
+
+		// Now trace that distance for a result
+		ray.Init(vecEndPos, vecPostOffset);
+		UTIL_Portal_TraceRay(ray, MASK_SOLID, NULL, COLLISION_GROUP_NONE, &tr);
+
+		// NDebugOverlay::VertArrow( tr.startpos, tr.endpos, 2.0f, 255, 255, 255, 8, true, 0.05f );
+
+		if (tr.fraction < 1.0f)
+			return false;
+
+		// Give them an offset if they've requested it
+		if (vecOut)
+		{
+			*vecOut -= (vecDirection * flPosOffset);
+		}
+
+		return true;
+	}
+
+	// No movement, so it fits with no offset
+	return true;
+}
+
+bool CPhysicsProp::CPhotoPlacementQuery::GetPlacementPosition_NoHelper(CaptureInfo_t& captureInfo,
+	CheckPlacementData_t& placementData,
+	Vector& positionOut,
+	QAngle& anglesOut)
+{
+	// Must have mark-up data to care about this step
+	PropPlacementData_t propData;
+	if (UTIL_GetPropPlacementData(STRING(captureInfo.hCapturedEnt->GetModelName()), propData))
+	{
+		return GetPropPosition(propData, captureInfo, placementData, positionOut, anglesOut);
+	}
+
+	anglesOut = vec3_angle;
+	anglesOut[YAW] = UTIL_VecToYaw(-placementData.vTraceDirection);
+
+	if (SpacePlacement(captureInfo, placementData, anglesOut, MASK_SOLID, positionOut))
+	{
+
+		return true;
+	}
+	else
+	{
+		//fall back on older (more tested) code
+		CBaseAnimating* pAnim = (CBaseAnimating*)(captureInfo.hCapturedEnt->GetBaseAnimating());
+		if (pAnim == NULL)
+		{
+			Assert(pAnim != NULL);
+			return false;
+		}
+
+		Vector vecForward, vecRight, vecUp;
+		pAnim->GetVectors(&vecForward, &vecRight, &vecUp);
+
+		// Six cardinal directions we'll look in
+		Vector vecDirections[6];
+		vecDirections[0] = vecForward;
+		vecDirections[1] = -vecForward;
+		vecDirections[2] = vecRight;
+		vecDirections[3] = -vecRight;
+		vecDirections[4] = vecUp;
+		vecDirections[5] = -vecUp;
+
+		// FIXME: Temp
+		pAnim->SetAbsAngles(vec3_angle);
+
+		// Blah, just approximate some things here
+		Vector vecMins, vecMaxs;
+		pAnim->CollisionProp()->WorldSpaceSurroundingBounds(&vecMins, &vecMaxs);
+		vecMaxs -= pAnim->GetAbsOrigin();
+		vecMins -= pAnim->GetAbsOrigin();
+
+		vecMaxs *= placementData.fScale / pAnim->GetModelScale();
+		vecMins *= placementData.fScale / pAnim->GetModelScale();
+
+		// NDebugOverlay::Box( vecEndPoint, vecMins, vecMaxs, 0, 255, 0, 0, 0.05f );
+
+		Vector vecOffset = vec3_origin;
+		Vector vecNormal = (placementData.Trace.plane.normal == vec3_origin) ? Vector(0, 0, 1) : placementData.Trace.plane.normal;
+		Vector vecTargetPos = placementData.Trace.endpos + (vecNormal * 1.0f);
+
+		bool bFits = true;
+
+		// Account for our scaled size
+		for (int i = 0; i < ARRAYSIZE(vecDirections); i++)
+		{
+			float flLength = (i % 2) ? vecMins[i / 2] : vecMaxs[i / 2];
+			float flCounterLength = (i % 2) ? vecMaxs[i / 2] : vecMins[i / 2];
+			if (FindPlacementPosition(vecTargetPos, fabs(flLength), fabs(flCounterLength), vecDirections[i], &vecOffset) == false)
+			{
+				bFits = false;
+				break;
+			}
+		}
+
+		positionOut = vecTargetPos + vecOffset;
+
+		anglesOut = vec3_angle;
+		anglesOut[YAW] = UTIL_VecToYaw(-placementData.vTraceDirection);
+
+
+		return bFits;
+	}
+}
+
+
+#endif // PORTAL2
 
 //=============================================================================================================
 // BASE PROP DOOR

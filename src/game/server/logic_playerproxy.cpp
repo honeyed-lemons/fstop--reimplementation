@@ -194,6 +194,6 @@ void CLogicPlayerProxy::InputSuppressCrosshair( inputdata_t &inputdata )
 		return;
 
 	CPortal_Player *pPlayer = static_cast<CPortal_Player*>( m_hPlayer.Get() );
-	pPlayer->SuppressCrosshair( true );
+	//pPlayer->SuppressCrosshair( true );
 }
 #endif // PORTAL

@@ -112,6 +112,10 @@
 #include "asw_gamerules.h"
 #endif
 
+#ifdef PORTAL2
+#include "portal2/photo.h"
+#endif // PORTAL2
+
 #ifdef PORTAL
 #include "prop_portal_shared.h"
 #include "portal_player.h"
@@ -1152,6 +1156,11 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 
 	// ask for the latest game rules
 	GameRules()->UpdateGameplayStatsFromSteam();
+
+
+#ifdef PORTAL2
+	UTIL_ClearPlacementHelpers();
+#endif // PORTAL2
 
 	return true;
 }

@@ -30,6 +30,11 @@
 #define CRecipientFilter C_RecipientFilter
 #endif
 
+#ifndef CLIENT_DLL
+#if defined ( PORTAL2 )
+#include "portal2/photo.h"
+#endif // PORTAL2 
+#endif
 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -573,6 +578,44 @@ public:
 		{
 			params.volume = ep.m_flVolume;
 		}
+
+#if defined ( PORTAL2 )
+#if !defined ( CLIENT_DLL )
+		// For portal2, effect the pitch of sounds emitted by scaled entities
+		if (UTIL_GetEntityScaleLevel(ent) != 0)
+		{
+			int iMinScaleLevel, iMaxScaleLevel;
+			int iScaleLevel = UTIL_GetEntityScaleLevel(ent, &iMinScaleLevel, &iMaxScaleLevel);
+
+			int iNewPitch = params.pitch;
+
+			// The biggest scale will halve original pitch, smallest will double it 
+			if (iScaleLevel < 0)
+			{
+				// if scale level is less than zero, this shouldn't happen, but it'll cause a div
+				// by zero so explicitly check and bail.
+				Assert(iMinScaleLevel > 0);
+				if (iMinScaleLevel > 0)
+				{
+					iNewPitch = RemapVal(abs(iScaleLevel), iMinScaleLevel, 0, params.pitch * 2, params.pitch);
+				}
+			}
+			else // iScaleLevel > 0 
+			{
+				// if scale level is greater than zero, this shouldn't happen, but it'll cause a div
+				// by zero so explicitly check and bail.
+				Assert(iMaxScaleLevel > 0);
+				if (iMaxScaleLevel > 0)
+				{
+					iNewPitch = RemapVal(iScaleLevel, 0, iMaxScaleLevel, params.pitch, params.pitch / 2);
+				}
+			}
+
+			params.pitch = iNewPitch;
+
+		}
+#endif // !CLIENT_DLL
+#endif // PORTAL2
 
 #if !defined( CLIENT_DLL )
 		bool bSwallowed = CEnvMicrophone::OnSoundPlayed( 

@@ -13,7 +13,7 @@
 #pragma once
 #endif
 
-#include "baseclientrendertargets.h" // Base class, with interfaces called by engine and inherited members to init common render targets
+#include "baseclientrendertargets.h" // base class, with interfaces called by engine and inherited members to init common render targets
 
 #ifndef PORTAL 
 #pragma message ( "This file should only be built with portal builds" )
@@ -26,18 +26,18 @@ class IMaterialSystemHardwareConfig;
 class CPortalRenderTargets : public CBaseClientRenderTargets
 {
 	// no networked vars
-	DECLARE_CLASS_GAMEROOT( CPortalRenderTargets, CBaseClientRenderTargets );
+	DECLARE_CLASS_GAMEROOT(CPortalRenderTargets, CBaseClientRenderTargets);
 public:
-	virtual void InitClientRenderTargets( IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig );
+	virtual void InitClientRenderTargets(IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig);
 	virtual void ShutdownClientRenderTargets();
 
-	ITexture* GetPortal1Texture( void );
-	ITexture* GetPortal2Texture( void );
-	ITexture* GetDepthDoublerTexture( void );
+	ITexture* GetPortal1Texture(void);
+	ITexture* GetPortal2Texture(void);
+	ITexture* GetDepthDoublerTexture(void);
 
 	//recursive views require different water textures
-	ITexture* GetWaterReflectionTextureForStencilDepth( int iStencilDepth );
-	ITexture* GetWaterRefractionTextureForStencilDepth( int iStencilDepth );
+	ITexture* GetWaterReflectionTextureForStencilDepth(int iStencilDepth);
+	ITexture* GetWaterRefractionTextureForStencilDepth(int iStencilDepth);
 
 private:
 	CTextureReference m_Portal1Texture;
@@ -47,11 +47,11 @@ private:
 	CTextureReference m_WaterRefractionTextures[2];
 	CTextureReference m_WaterReflectionTextures[2];
 
-	ITexture* InitPortal1Texture ( IMaterialSystem* pMaterialSystem );
-	ITexture* InitPortal2Texture ( IMaterialSystem* pMaterialSystem );
-	ITexture* InitDepthDoublerTexture ( IMaterialSystem* pMaterialSystem );
+	ITexture* InitPortal1Texture(IMaterialSystem* pMaterialSystem);
+	ITexture* InitPortal2Texture(IMaterialSystem* pMaterialSystem);
+	ITexture* InitDepthDoublerTexture(IMaterialSystem* pMaterialSystem);
 
-	void InitPortalWaterTextures ( IMaterialSystem* pMaterialSystem );
+	void InitPortalWaterTextures(IMaterialSystem* pMaterialSystem);
 
 };
 

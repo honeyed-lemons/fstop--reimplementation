@@ -36,4 +36,6 @@ STUB_WEAPON_CLASS( weapon_slam, Weapon_SLAM, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_crowbar, WeaponCrowbar, C_BaseHLBludgeonWeapon );
 STUB_WEAPON_CLASS( weapon_hopwire, WeaponHopwire, C_BaseHLCombatWeapon );
 
+STUB_WEAPON_CLASS(weapon_camera, WeaponCamera, C_BaseCombatWeapon);
+STUB_WEAPON_CLASS(weapon_placement, WeaponPlacement, C_BaseCombatWeapon);
 
