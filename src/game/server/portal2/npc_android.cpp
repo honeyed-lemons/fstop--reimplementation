@@ -481,7 +481,7 @@ bool CNPC_Android::FindNearestPhysicsObject( int iMaxMass )
 		return false;
 	}
 
-	float flNearestDist = min( dist, ANDROID_FARTHEST_PHYSICS_OBJECT * 0.5 );
+	float flNearestDist = MIN( dist, ANDROID_FARTHEST_PHYSICS_OBJECT * 0.5 );
 	Vector vecDelta( flNearestDist, flNearestDist, GetHullHeight() * 2.0 );
 
 	class CAndroidSwatEntitiesEnum : public CFlaggedEntitiesEnum
@@ -797,7 +797,7 @@ void CNPC_Android::Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, b
 	BaseClass::Ignite( flFlameLifetime, bNPCOnly, flSize, bCalledByLevelDesigner );
 
 	// Set the zombie up to burn to death in about ten seconds.
-	SetHealth( min( m_iHealth, FLAME_DIRECT_DAMAGE_PER_SEC * (ANDROID_BURN_TIME + random->RandomFloat( -ANDROID_BURN_TIME_NOISE, ANDROID_BURN_TIME_NOISE)) ) );
+	SetHealth( MIN( m_iHealth, FLAME_DIRECT_DAMAGE_PER_SEC * (ANDROID_BURN_TIME + random->RandomFloat( -ANDROID_BURN_TIME_NOISE, ANDROID_BURN_TIME_NOISE)) ) );
 
 	// FIXME: use overlays when they come online
 	//AddOverlay( ACT_ZOM_WALK_ON_FIRE, false );
@@ -833,7 +833,7 @@ void CNPC_Android::Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, b
 void CNPC_Android::CopyRenderColorTo( CBaseEntity *pOther )
 {
 	color24 color = GetRenderColor();
-	pOther->SetRenderColor( color.r, color.g, color.b, GetRenderAlpha() );
+	pOther->SetRenderColor( color.r, color.g, color.b);
 }
 
 //-----------------------------------------------------------------------------
@@ -1038,7 +1038,7 @@ void CNPC_Android::MoveStartSound( void )
 //-----------------------------------------------------------------------------
 void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 {
-	if ( pEvent->event == AE_NPC_ATTACK_BROADCAST )
+	if ( pEvent->Event() == AE_NPC_ATTACK_BROADCAST )
 	{
 		if( GetEnemy() && GetEnemy()->IsNPC() )
 		{
@@ -1053,26 +1053,26 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_POUND )
+	if ( pEvent->Event() == AE_ANDROID_POUND )
 	{
 		PoundSound();
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_ALERTSOUND )
+	if ( pEvent->Event() == AE_ANDROID_ALERTSOUND )
 	{
 		AlertSound();
 		return;
 	}
 	
-	if ( pEvent->event == AE_ANDROID_MOVESTART_LEFT ||
-		 pEvent->event == AE_ANDROID_MOVESTART_RIGHT )
+	if ( pEvent->Event() == AE_ANDROID_MOVESTART_LEFT ||
+		 pEvent->Event() == AE_ANDROID_MOVESTART_RIGHT )
 	{
 		MoveStartSound();
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_STEP_LEFT )
+	if ( pEvent->Event() == AE_ANDROID_STEP_LEFT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		FootstepSound( false );
@@ -1085,7 +1085,7 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 	
-	if ( pEvent->event == AE_ANDROID_STEP_RIGHT )
+	if ( pEvent->Event() == AE_ANDROID_STEP_RIGHT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		FootstepSound( true );
@@ -1098,7 +1098,7 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_GET_UP )
+	if ( pEvent->Event() == AE_ANDROID_GET_UP )
 	{
 		MakeAIFootstepSound( 180.0f, 3.0f );
 		if( !IsOnFire() )
@@ -1110,41 +1110,41 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-//	if ( pEvent->event == AE_ANDROID_SCUFF_LEFT )
+//	if ( pEvent->Event() == AE_ANDROID_SCUFF_LEFT )
 //	{
 //		MakeAIFootstepSound( 180.0f );
 ////		FootscuffSound( false );
 //		return;
 //	}
 //
-//	if ( pEvent->event == AE_ANDROID_SCUFF_RIGHT )
+//	if ( pEvent->Event() == AE_ANDROID_SCUFF_RIGHT )
 //	{
 //		MakeAIFootstepSound( 180.0f );
 ////		FootscuffSound( true );
 //		return;
 //	}
 
-	if ( pEvent->event == AE_ANDROID_WIFF )
+	if ( pEvent->Event() == AE_ANDROID_WIFF )
 	{
 		AttackMissSound();
 		return;
 	}
 
 	// all swat animations are handled as a single case.
-	if ( pEvent->event == AE_ANDROID_STARTSWAT )
+	if ( pEvent->Event() == AE_ANDROID_STARTSWAT )
 	{
 		MakeAIFootstepSound( 180.0f );
 		AttackSound();
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_ATTACK_SCREAM )
+	if ( pEvent->Event() == AE_ANDROID_ATTACK_SCREAM )
 	{
 //		AttackSound();
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_SWATITEM )
+	if ( pEvent->Event() == AE_ANDROID_SWATITEM )
 	{
 		CBaseEntity *pEnemy = GetEnemy();
 		if ( pEnemy )
@@ -1202,7 +1202,7 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 	float damage = GetObjectScaleLevel() == 1 ? android_dmg_big.GetFloat() : android_dmg_normal.GetFloat();
 	float scalar = GetModelScale();
 
-	if ( pEvent->event == AE_ANDROID_ATTACK_RIGHT )
+	if ( pEvent->Event() == AE_ANDROID_ATTACK_RIGHT )
 	{
 		Vector right, forward;
 		AngleVectors( GetLocalAngles(), &forward, &right, NULL );
@@ -1214,7 +1214,7 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_ATTACK_LEFT )
+	if ( pEvent->Event() == AE_ANDROID_ATTACK_LEFT )
 	{
 		Vector right, forward;
 		AngleVectors( GetLocalAngles(), &forward, &right, NULL );
@@ -1226,7 +1226,7 @@ void CNPC_Android::HandleAnimEvent( animevent_t *pEvent )
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_ATTACK_BOTH )
+	if ( pEvent->Event() == AE_ANDROID_ATTACK_BOTH )
 	{
 		Vector right, forward;
 		int rightPunch = random->RandomInt(-10,10);

@@ -2000,6 +2000,9 @@
     <ClInclude Include="portal\PhysicsCloneArea.h">
       <Filter>Source Files\Portal</Filter>
     </ClInclude>
+    <ClInclude Include="portal2\npc_android.h">
+      <Filter>Source Files\Portal2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\game\shared\achievement_saverestore.cpp">
@@ -4008,6 +4011,18 @@
       <Filter>Source Files\Portal2</Filter>
     </ClCompile>
     <ClCompile Include="portal2\env_portal_laser.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_android.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_android_basic.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_android_missile.cpp">
+      <Filter>Source Files\Portal2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_android_dispenser.cpp">
       <Filter>Source Files\Portal2</Filter>
     </ClCompile>
   </ItemGroup>

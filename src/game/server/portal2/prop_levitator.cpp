@@ -117,7 +117,7 @@ protected:
 };
 
 BEGIN_DATADESC( CPropLevitator )
-	DEFINE_THINKFUNC( FloatThink ),
+DEFINE_THINKFUNC( FloatThink ),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( prop_levitator, CPropLevitator );

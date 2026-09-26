@@ -447,7 +447,7 @@ void CAndroidMissile::StickTo( CBaseEntity *pOther, trace_t &tr )
 	UTIL_ImpactTrace( &tr, DMG_BULLET );
 	
 	// Shoot some sparks
-	if ( UTIL_PointContents( GetAbsOrigin() ) != CONTENTS_WATER)
+	if (UTIL_PointContents(GetAbsOrigin(), MASK_WATER) & CONTENTS_WATER)
 	{
 		g_pEffects->Sparks( GetAbsOrigin() );
 	}
@@ -482,7 +482,7 @@ void CAndroidMissile::MissileTouch( CBaseEntity *pOther )
 		CBreakable *pBreak = dynamic_cast <CBreakable *>(pOther);
 		if ( pBreak && ( pBreak->GetMaterialType() == matGlass ) )
 		{
-			flDamage = max( pOther->GetHealth(), flDamage );
+			flDamage = MAX( pOther->GetHealth(), flDamage );
 		}
 
 		CTakeDamageInfo	dmgInfo( this, GetOwnerEntity(), flDamage, DMG_DISSOLVE | DMG_NEVERGIB );
@@ -848,12 +848,12 @@ bool CNPC_Android_Missile::IsValidEnemy( CBaseEntity *pEnemy )
 void CNPC_Android_Missile::HandleAnimEvent( animevent_t *pEvent )
 {
 	/// need to do some sort of "Bad stuff is comming" effect
-	if ( pEvent->event == AE_ANDROID_STARTSHOOT )
+	if ( pEvent->Event() == AE_ANDROID_STARTSHOOT)
 	{
 		return;
 	}
 
-	if ( pEvent->event == AE_ANDROID_SHOOT )
+	if ( pEvent->Event() == AE_ANDROID_SHOOT)
 	{
 		CBaseEntity* pEnemy = GetEnemy();
 		if( pEnemy )
