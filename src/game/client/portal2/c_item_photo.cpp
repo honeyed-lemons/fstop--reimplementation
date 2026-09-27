@@ -9,6 +9,7 @@
 #include "proxyentity.h"
 #include "materialsystem/imaterialvar.h"
 #include "c_portal_player.h"
+#include "imaterialproxydict.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -74,7 +75,7 @@ IMaterial *CPhotoMaterialProxy::GetMaterial( void )
 	return m_BaseTextureVar->GetOwningMaterial();
 }
 
-EXPOSE_INTERFACE( CPhotoMaterialProxy, IMaterialProxy, "PhotoMaterial" IMATERIAL_PROXY_INTERFACE_VERSION );
+EXPOSE_MATERIAL_PROXY( CPhotoMaterialProxy, PhotoMaterial);
 
 //------------------------------------------------------------------------------
 // A material proxy that resets the texture to use the original surface texture
@@ -159,4 +160,4 @@ void CPlacementPhotoMaterialProxy::OnBind( C_BaseEntity *pC_BaseEntity )
 	m_pAlphaVar->SetFloatValue( GetAlphaFade() );
 }
 
-EXPOSE_INTERFACE( CPlacementPhotoMaterialProxy, IMaterialProxy, "PlacementPhoto" IMATERIAL_PROXY_INTERFACE_VERSION );
+EXPOSE_MATERIAL_PROXY( CPlacementPhotoMaterialProxy, PlacementMaterial);

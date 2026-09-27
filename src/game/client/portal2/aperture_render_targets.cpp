@@ -105,8 +105,4 @@ void CApertureRenderTargets::ShutdownClientRenderTargets()
 static CApertureRenderTargets g_ApertureRenderTargets;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CApertureRenderTargets, IClientRenderTargets, CLIENTRENDERTARGETS_INTERFACE_VERSION, g_ApertureRenderTargets);
 CApertureRenderTargets* aperturerendertargets = &g_ApertureRenderTargets;
-
-static CPortalRenderTargets g_PortalRenderTargets;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CPortalRenderTargets, IClientRenderTargets, CLIENTRENDERTARGETS_INTERFACE_VERSION, g_PortalRenderTargets);
-CPortalRenderTargets* portalrendertargets = &g_ApertureRenderTargets;
 //CPortalRenderTargets* portalrendertargets = &g_ApertureRenderTargets;

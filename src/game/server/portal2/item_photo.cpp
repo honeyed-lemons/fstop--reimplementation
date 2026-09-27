@@ -160,13 +160,6 @@ void CPhotograph::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	// Put it into our inventory
 	int nIndex = Photo_Add( &m_captureInfo );
 
-	CSingleUserRecipientFilter user( pPlayer );
-	user.MakeReliable();
-	UserMessageBegin( user, "TakePhoto" );
-	WRITE_EHANDLE( this );
-	WRITE_BYTE( nIndex );
-	MessageEnd();
-
 	if ( pPlayer )
 	{
 		pPlayer->FlashInventory( 2.0f, FLASH_INVENTORY_ADDED );

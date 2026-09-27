@@ -7,7 +7,6 @@
 // $Date:         $
 // $NoKeywords: $
 //=============================================================================//
-#ifndef APERTURERENDERTARGETS_H_
 #define APERTURERENDERTARGETS_H_
 #ifdef _WIN32
 #pragma once
@@ -43,6 +42,3 @@ private:
 };
 
 extern CApertureRenderTargets* aperturerendertargets;
-
-
-#endif //APERTURERENDERTARGETS_H_
