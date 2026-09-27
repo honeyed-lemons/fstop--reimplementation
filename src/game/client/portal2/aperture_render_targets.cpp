@@ -13,16 +13,10 @@ extern CApertureRenderTargets* aperturerendertargets;
 
 void CApertureRenderTargets::InitLargePhotoTextures(IMaterialSystem* pMaterialSystem)
 {
-	Msg("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
 	for (int i = 0; i != ARRAYSIZE(m_LargePhotoTextures); ++i)
 	{
 		char szName[256];
-		if (i = 1)
-			Q_snprintf(szName, sizeof(szName), "_rt_LargePhoto%1");
-		if (i = 2)
-			Q_snprintf(szName, sizeof(szName), "_rt_LargePhoto%2");
-		if (i = 3)
-			Q_snprintf(szName, sizeof(szName), "_rt_LargePhoto%3");
+		Q_snprintf(szName, sizeof(szName), "_rt_LargePhoto%d", i + 1);
 
 		m_LargePhotoTextures[i].Init(pMaterialSystem->CreateNamedRenderTargetTextureEx2(
 			szName,
@@ -76,6 +70,7 @@ ITexture *CApertureRenderTargets::GetLargePhotoRenderTarget(int iIndex)
 //-----------------------------------------------------------------------------
 void CApertureRenderTargets::InitClientRenderTargets(IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig)
 {
+	Msg("We're happy and aperture_render_targets!");
 	InitLargePhotoTextures(pMaterialSystem);
 	//InitSmallPhotoTextures( pMaterialSystem );
 
@@ -105,4 +100,5 @@ void CApertureRenderTargets::ShutdownClientRenderTargets()
 static CApertureRenderTargets g_ApertureRenderTargets;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CApertureRenderTargets, IClientRenderTargets, CLIENTRENDERTARGETS_INTERFACE_VERSION, g_ApertureRenderTargets);
 CApertureRenderTargets* aperturerendertargets = &g_ApertureRenderTargets;
-//CPortalRenderTargets* portalrendertargets = &g_ApertureRenderTargets;
+
+CPortalRenderTargets* portalrendertargets = &g_ApertureRenderTargets;

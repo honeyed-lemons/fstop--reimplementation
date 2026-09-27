@@ -787,7 +787,6 @@ void CWeaponCamera::OnMouseWheel( int nDirection )
 //-----------------------------------------------------------------------------
 void CWeaponCamera::PrimaryAttack( void )
 {
-	Msg("PrimaryAttack\n");
 	// Get our owner
 	CPortal_Player *pPlayer = (CPortal_Player *) ToBasePlayer( GetOwner() );
 	if ( pPlayer == NULL )
@@ -796,7 +795,6 @@ void CWeaponCamera::PrimaryAttack( void )
 	// If we've taken a picture, go back to NULL
 	if ( Photo_Count() >= 1 )
 	{
-		Msg("Swapping to placement mode\n");
 		// Switch away to the photo placement mode
 		pPlayer->SwitchToNextBestWeapon( this );
 		pPlayer->ControlHelperAnimate( CONTROL_STATE_PICTURE );
