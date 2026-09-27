@@ -477,7 +477,7 @@ protected:
 #endif // PORTAL
 
 #ifdef PORTAL2
-	void			ViewDrawPhoto( ITexture *pRenderTarget, C_BaseEntity *pEnt ); //need a photo of an entity
+	void			ViewDrawPhoto(ITexture* pRenderTarget, C_BaseEntity* pEnt); //need a photo of an entity
 #endif
 
 	// Determines what kind of water we're going to use

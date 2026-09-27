@@ -75,7 +75,7 @@ IMaterial *CPhotoMaterialProxy::GetMaterial( void )
 	return m_BaseTextureVar->GetOwningMaterial();
 }
 
-EXPOSE_MATERIAL_PROXY( CPhotoMaterialProxy, PhotoMaterial);
+EXPOSE_MATERIAL_PROXY( CPhotoMaterialProxy, PlacementPhoto);
 
 //------------------------------------------------------------------------------
 // A material proxy that resets the texture to use the original surface texture
