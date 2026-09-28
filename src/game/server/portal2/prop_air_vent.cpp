@@ -438,7 +438,7 @@ void CPropAirVent::CreateCurrent( void )
 	{
 		if ( vecMins[i] > vecMaxs[i] )
 		{
-			SwapDWord( vecMins[i], vecMaxs[i] );
+			V_swap( vecMins[i], vecMaxs[i] );
 		}
 	}
 

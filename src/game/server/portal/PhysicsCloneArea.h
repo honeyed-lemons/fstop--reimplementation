@@ -20,28 +20,28 @@ class CPortalSimulator;
 class CPhysicsCloneArea : public CBaseEntity
 {
 public:
-	DECLARE_CLASS(CPhysicsCloneArea, CBaseEntity);
+	DECLARE_CLASS( CPhysicsCloneArea, CBaseEntity );
 
 	static const Vector		vLocalMins;
 	static const Vector		vLocalMaxs;
 
-	virtual void			StartTouch(CBaseEntity* pOther);
-	virtual void			Touch(CBaseEntity* pOther);
-	virtual void			EndTouch(CBaseEntity* pOther);
+	virtual void			StartTouch( CBaseEntity *pOther );
+	virtual void			Touch( CBaseEntity *pOther ); 
+	virtual void			EndTouch( CBaseEntity *pOther );
 
-	virtual void			Spawn(void);
-	virtual void			Activate(void);
+	virtual void			Spawn( void );
+	virtual void			Activate( void );
 
-	virtual int				ObjectCaps(void);
-	void					UpdatePosition(void);
+	virtual int				ObjectCaps( void );
+	void					UpdatePosition( void );
 
-	void					CloneTouchingEntities(void);
-	void					CloneNearbyEntities(void);
-	static CPhysicsCloneArea* CreatePhysicsCloneArea(CProp_Portal* pFollowPortal);
+	void					CloneTouchingEntities( void );
+	void					CloneNearbyEntities( void );
+	static CPhysicsCloneArea *CreatePhysicsCloneArea( CProp_Portal *pFollowPortal );	
 private:
 
-	CProp_Portal* m_pAttachedPortal;
-	CPortalSimulator* m_pAttachedSimulator;
+	CProp_Portal			*m_pAttachedPortal;
+	CPortalSimulator		*m_pAttachedSimulator;
 	bool					m_bActive;
 
 
