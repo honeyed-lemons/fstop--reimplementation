@@ -45,3 +45,4 @@ config.cfg
 *.tmp
 /.vs
 /src/.vs/Game_Portal-2013
+/src/game/server/Debug_portal
