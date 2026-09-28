@@ -363,6 +363,17 @@ $Project "Client (Portal)"
 				$File	"$SRCDIR\game\shared\portal\weapon_portalgun_shared.h"
 			}
 		}
+		$Folder	"Portal 2"
+		{
+			$File	"portal2\aperture_render_targets.cpp"
+			$File	"portal2\aperture_render_targets.h"
+			$File	"portal2\c_item_photo.cpp"
+			$File	"portal2\c_npc_hover_turret.cpp"
+			$File	"portal2\hud_flash.cpp"
+			$File	"portal2\hud_indicator.cpp"
+			$File	"portal2\hud_photo_inventory.cpp"
+			$File	"portal2\hud_viewfinder.cpp"
+		}
 	}
 	
 	$Folder	"Link Libraries"

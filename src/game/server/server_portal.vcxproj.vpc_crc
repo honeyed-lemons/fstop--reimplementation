@@ -1,7 +1,7 @@
 [vpc crc file version 2]
-8209bbc3 C:\Users\alex\source\repos\Portal-Swarm\src\devtools\bin\vpc.exe
+8209bbc3 C:\Users\alex\source\repos\fstop--reimplementation\src\devtools\bin\vpc.exe
 _Nc_VS2013/vpcgame:portal_
-c1396268 server_portal.vpc
+0814d814 server_portal.vpc
 a70c2e97 ..\..\game\server\server_base.vpc
 9a02405f ..\..\vpc_scripts\source_dll_base.vpc
 d752cf80 ..\..\vpc_scripts\platform_dirs.vpc

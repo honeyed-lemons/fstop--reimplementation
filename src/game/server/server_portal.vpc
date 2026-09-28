@@ -350,5 +350,46 @@ $Project "Server (Portal)"
 				$File	"$SRCDIR\game\shared\portal\weapon_portalgun_shared.h"
 			}
 		}
+		$Folder	"Portal 2"
+		{
+			$File	"portal2\env_portal_laser.cpp"
+			$File	"portal2\func_monopole_field.cpp"
+			$File	"portal2\func_placement_clip.cpp"
+			$File	"portal2\info_placement_helper.cpp"
+			$File	"portal2\info_placement_helper.h"
+			$File	"portal2\inv_photos.cpp"
+			$File	"portal2\inv_photos.h"
+			$File	"portal2\item_photo.cpp"
+			$File	"portal2\npc_android.cpp"
+			$File	"portal2\npc_android.h"
+			$File	"portal2\npc_android_basic.cpp"
+			$File	"portal2\npc_android_missile.cpp"
+			$File	"portal2\npc_chicken.cpp"
+			$File	"portal2\npc_hover_turret.cpp"
+			$File	"portal2\photo.cpp"
+			$File	"portal2\photo.h"
+			$File	"portal2\prop_air_vent.cpp"
+			$File	"portal2\prop_air_vent.h"
+			$File	"portal2\prop_android_dispenser.cpp"
+//			$File	"portal2\prop_building.cpp"
+			$File	"portal2\prop_geyser.cpp"
+			$File	"portal2\prop_levitator.cpp"
+			$File	"portal2\prop_monopole.cpp"
+			$File	"portal2\prop_mousetrap.cpp"
+			$File	"portal2\prop_personality_sphere.cpp"
+			$File	"portal2\prop_portal_linked_door.cpp"
+			$File	"portal2\prop_portal_tunnel.cpp"
+			$File	"portal2\prop_reflect.cpp"
+			$File	"portal2\prop_swap.cpp"
+//			$File	"portal2\prop_tombstone.cpp"
+			$File	"portal2\trigger_photo_eraser.cpp"
+			
+			$Folder	"Weapons"
+			{
+				$File	"portal2\weapon_camera.cpp"
+				$File	"portal2\weapon_camera.h"
+				$File	"portal2\weapon_placement.cpp"
+			}
+		}
 	}
 }

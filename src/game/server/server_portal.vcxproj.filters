@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Portal\Weapons">
       <UniqueIdentifier>{63885006-58CF-723C-AB9C-B87B6D33FF09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Portal 2">
+      <UniqueIdentifier>{40F3BE2E-C88E-5460-16C1-193BBF7DBE0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Portal 2\Weapons">
+      <UniqueIdentifier>{DBBC91F2-6D4F-F902-8451-2978ADAA7CD7}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Precompiled Header">
       <UniqueIdentifier>{A7D26A13-21F4-C6B5-5922-8A4FB05AF07D}</UniqueIdentifier>
     </Filter>
@@ -36,9 +42,6 @@
     </Filter>
     <Filter Include="VPC Scripts">
       <UniqueIdentifier>{A40EE377-781A-C6B9-0C7C-B3BE118D248E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Portal2">
-      <UniqueIdentifier>{cfd84e6a-007a-4f8f-bcba-46c9022945cd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1958,6 +1961,24 @@
     <ClInclude Include="..\..\game\shared\portal\weapon_portalgun_shared.h">
       <Filter>Source Files\Portal\Weapons</Filter>
     </ClInclude>
+    <ClInclude Include="portal2\info_placement_helper.h">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClInclude>
+    <ClInclude Include="portal2\inv_photos.h">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClInclude>
+    <ClInclude Include="portal2\npc_android.h">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClInclude>
+    <ClInclude Include="portal2\photo.h">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClInclude>
+    <ClInclude Include="portal2\prop_air_vent.h">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClInclude>
+    <ClInclude Include="portal2\weapon_camera.h">
+      <Filter>Source Files\Portal 2\Weapons</Filter>
+    </ClInclude>
     <ClInclude Include="plasma.h">
       <Filter>Source Files\temporary entities</Filter>
     </ClInclude>
@@ -1981,27 +2002,6 @@
     </ClInclude>
     <ClInclude Include="toolframework_server.h">
       <Filter>Tools Framework</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\weapon_camera.h">
-      <Filter>Source Files\Portal2</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\photo.h">
-      <Filter>Source Files\Portal2</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\info_placement_helper.h">
-      <Filter>Source Files\Portal2</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\inv_photos.h">
-      <Filter>Source Files\Portal2</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\prop_air_vent.h">
-      <Filter>Source Files\Portal2</Filter>
-    </ClInclude>
-    <ClInclude Include="portal\PhysicsCloneArea.h">
-      <Filter>Source Files\Portal</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\npc_android.h">
-      <Filter>Source Files\Portal2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3793,6 +3793,84 @@
     <ClCompile Include="..\..\game\shared\portal\weapon_portalgun_shared.cpp">
       <Filter>Source Files\Portal\Weapons</Filter>
     </ClCompile>
+    <ClCompile Include="portal2\env_portal_laser.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\func_monopole_field.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\func_placement_clip.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\info_placement_helper.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\inv_photos.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\item_photo.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_android.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_android_basic.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_android_missile.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_chicken.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\npc_hover_turret.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\photo.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_air_vent.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_android_dispenser.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_geyser.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_levitator.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_monopole.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_mousetrap.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_personality_sphere.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_portal_linked_door.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_portal_tunnel.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_reflect.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\prop_swap.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\trigger_photo_eraser.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\weapon_camera.cpp">
+      <Filter>Source Files\Portal 2\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\weapon_placement.cpp">
+      <Filter>Source Files\Portal 2\Weapons</Filter>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files\Precompiled Header</Filter>
     </ClCompile>
@@ -3960,70 +4038,6 @@
     </ClCompile>
     <ClCompile Include="toolframework_server.cpp">
       <Filter>Tools Framework</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\npc_hover_turret.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\weapon_camera.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\weapon_placement.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\photo.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\info_placement_helper.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\inv_photos.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\item_photo.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\trigger_photo_eraser.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\prop_air_vent.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\prop_swap.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\prop_portal_tunnel.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Downloads\game\server\portal2\prop_mousetrap.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\prop_personality_sphere.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\func_monopole_field.cpp" />
-    <ClCompile Include="portal2\func_placement_clip.cpp" />
-    <ClCompile Include="portal2\npc_chicken.cpp" />
-    <ClCompile Include="portal2\prop_geyser.cpp" />
-    <ClCompile Include="portal2\prop_levitator.cpp" />
-    <ClCompile Include="portal2\prop_portal_linked_door.cpp" />
-    <ClCompile Include="portal2\prop_reflect.cpp" />
-    <ClCompile Include="portal2\prop_monopole.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\env_portal_laser.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\npc_android.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\npc_android_basic.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\npc_android_missile.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\prop_android_dispenser.cpp">
-      <Filter>Source Files\Portal2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

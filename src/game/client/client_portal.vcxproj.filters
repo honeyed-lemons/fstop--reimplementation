@@ -46,6 +46,9 @@
     <Filter Include="Source Files\Portal\Weapons">
       <UniqueIdentifier>{63885006-58CF-723C-AB9C-B87B6D33FF09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Portal 2">
+      <UniqueIdentifier>{40F3BE2E-C88E-5460-16C1-193BBF7DBE0D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Precompiled Header">
       <UniqueIdentifier>{A7D26A13-21F4-C6B5-5922-8A4FB05AF07D}</UniqueIdentifier>
     </Filter>
@@ -57,9 +60,6 @@
     </Filter>
     <Filter Include="VPC Scripts">
       <UniqueIdentifier>{A40EE377-781A-C6B9-0C7C-B3BE118D248E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Portal2">
-      <UniqueIdentifier>{51309110-1a69-444e-a5f8-d76a4652946f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2204,14 +2204,14 @@
     <ClInclude Include="..\..\game\shared\portal\weapon_portalgun_shared.h">
       <Filter>Source Files\Portal\Weapons</Filter>
     </ClInclude>
+    <ClInclude Include="portal2\aperture_render_targets.h">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\public\tools\bonelist.h">
       <Filter>Tool Framework</Filter>
     </ClInclude>
     <ClInclude Include="toolframework_client.h">
       <Filter>Tool Framework</Filter>
-    </ClInclude>
-    <ClInclude Include="portal2\aperture_render_targets.h">
-      <Filter>Source Files\Portal2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3871,6 +3871,27 @@
     <ClCompile Include="..\..\game\shared\portal\weapon_portalgun_shared.cpp">
       <Filter>Source Files\Portal\Weapons</Filter>
     </ClCompile>
+    <ClCompile Include="portal2\aperture_render_targets.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\c_item_photo.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\c_npc_hover_turret.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_flash.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_indicator.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_photo_inventory.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
+    <ClCompile Include="portal2\hud_viewfinder.cpp">
+      <Filter>Source Files\Portal 2</Filter>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files\Precompiled Header</Filter>
     </ClCompile>
@@ -4071,27 +4092,6 @@
     </ClCompile>
     <ClCompile Include="toolframework_client.cpp">
       <Filter>Tool Framework</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\c_npc_hover_turret.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\aperture_render_targets.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\c_item_photo.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\hud_flash.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\hud_indicator.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\hud_photo_inventory.cpp">
-      <Filter>Source Files\Portal2</Filter>
-    </ClCompile>
-    <ClCompile Include="portal2\hud_viewfinder.cpp">
-      <Filter>Source Files\Portal2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
