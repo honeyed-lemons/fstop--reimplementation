@@ -42,6 +42,12 @@
 #define PORTAL_PLAYER_MAX_LIFT_MASS 85
 #define PORTAL_PLAYER_MAX_LIFT_SIZE 128
 
+#if defined ( PORTAL2 )
+#define PORTAL2_WALK_SPEED	125
+#define PORTAL2_NORM_SPEED	275
+ConVar sv_allow_player_pickup( "sv_allow_player_pickup", "1", FCVAR_CHEAT );
+#endif // PORTAL2
+
 extern CBaseEntity	*g_pLastSpawn;
 
 extern void respawn(CBaseEntity *pEdict, bool fCopyCorpse);
@@ -451,11 +457,21 @@ void CPortal_Player::Spawn(void)
 #ifdef PORTAL_MP
 	PickTeam();
 #endif
+
+#ifdef PORTAL2
+	SetMaxSpeed(PORTAL2_NORM_SPEED);
+#endif // PORTAL2
 }
 
 void CPortal_Player::Activate( void )
 {
 	BaseClass::Activate();
+
+#ifdef PORTAL2
+	// HACK: Base class InitSprinting stomps our max speed, replace it here.
+	SetMaxSpeed(PORTAL2_NORM_SPEED);
+#endif // PORTAL2
+
 	m_fTimeLastNumSecondsUpdate = gpGlobals->curtime;
 }
 
