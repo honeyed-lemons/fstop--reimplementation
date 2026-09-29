@@ -22,8 +22,7 @@ const char* g_pszCreateTunnelContext = "CreateTunnelThinkContext";
 
 ConVar sv_portal_door_use_legacy_placement_rules("sv_portal_door_use_legacy_placement_rules", "0");
 ConVar sv_portal_door_allowscale("sv_portal_door_allowscale", "0");
-
-
+ConVar sv_portal_door_disallowitemcollide("sv_portal_door_disallowitemcollide", "1");
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -320,7 +319,8 @@ void CPropPortalTunnel::Spawn(void)
 	vecMaxs *= 0.9f;
 
 	// Create an entity blocker
-	m_hPhysicsBlocker = CEntityBlocker::Create(GetAbsOrigin(), vecMins, vecMaxs, UTIL_GetLocalPlayer(), true);
+	if(sv_portal_door_disallowitemcollide.GetBool())
+		m_hPhysicsBlocker = CEntityBlocker::Create(GetAbsOrigin(), vecMins, vecMaxs, UTIL_GetLocalPlayer(), true);
 
 	// Don't cast shadows because we're going to be moving around
 	AddEffects(EF_NOSHADOW);
