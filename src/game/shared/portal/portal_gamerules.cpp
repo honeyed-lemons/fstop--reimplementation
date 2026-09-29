@@ -1129,7 +1129,14 @@ bool CPortalGameRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 	{
 		return true;
 	}*/
+#ifdef PORTAL2
 
+	if (collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT && collisionGroup1 == COLLISION_GROUP_CAMERA_SOLID)
+		return false;
+	if (collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT && collisionGroup1 == COLLISION_GROUP_PLACEMENT_SOLID)
+		return false;
+
+#endif
 	return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 ); 
 }
 
