@@ -316,7 +316,7 @@ CBaseAnimating::CBaseAnimating()
 	
 #ifdef PORTAL2
 	m_nObjectScaleLevel = 0;	 // No scale
-	m_bCanBeCaptured = false;
+	m_bCanBeCaptured = true; // Honey - frankly this should be false but i dont want to bother with manually fixing things that are spawned to be captured
 #endif // PORTAL2
 }
 
