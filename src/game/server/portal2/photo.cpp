@@ -227,6 +227,12 @@ bool CBaseEntity::CPhotoPlacementQuery::CheckPlacement( CaptureInfo_t &captureIn
 	if( pHelperOut )
 		*pHelperOut = placementData.hPlacementHelper.Get();
 
+	if (bSucceeded)
+	{
+		g_placedEntity = placementData.pPlacedEntity;
+		g_placedPosition = placementData.vPlacedPosition;
+	}
+
 	return bSucceeded;
 }
 

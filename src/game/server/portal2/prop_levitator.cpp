@@ -333,7 +333,7 @@ bool CPropLevitator::CreateConstraint( CBaseEntity *pTargetEntity, const Vector 
 
 	if ( pTargetPhys == NULL )
 	{
-		return false; // FIXME: For now just let us go!
+		//return false; // FIXME: For now just let us go!
 		pTargetPhys = g_PhysWorldObject;
 	}
 
