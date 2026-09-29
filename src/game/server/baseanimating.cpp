@@ -316,7 +316,7 @@ CBaseAnimating::CBaseAnimating()
 	
 #ifdef PORTAL2
 	m_nObjectScaleLevel = 0;	 // No scale
-	m_bCanBeCaptured = true;
+	m_bCanBeCaptured = false;
 #endif // PORTAL2
 }
 
