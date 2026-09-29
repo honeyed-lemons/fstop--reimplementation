@@ -118,7 +118,7 @@ END_DATADESC()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CPropPortalTunnel::CPropPortalTunnel(void) : m_hPartner(NULL), m_hPortal(NULL), m_nPortalGroupID(PORTAL_LINKAGE_GROUP_INVALID)
+CPropPortalTunnel::CPropPortalTunnel(void) : m_hPartner(NULL), m_hPortal(NULL)//, m_nPortalGroupID(PORTAL_LINKAGE_GROUP_INVALID)
 {
 }
 
@@ -466,21 +466,21 @@ void CPropPortalTunnel::CreateTunnel(void)
 	AngleVectors(GetAbsAngles(), &vecDir);
 	Vector vecTraceStart = GetAbsOrigin() + (vecDir * 1.0f);
 
-	if (m_nPortalGroupID == PORTAL_LINKAGE_GROUP_INVALID)
-	{
-		SetPortalGroupID(UTIL_GetUnusedLinkageID());
-	}
+	//if (m_nPortalGroupID == PORTAL_LINKAGE_GROUP_INVALID)
+	//{
+	//	SetPortalGroupID(UTIL_GetUnusedLinkageID());
+	//}
 
 	bool bSecondary = (m_hPartner != NULL);
 	CProp_Portal* pPortal = CProp_Portal::FindPortal(m_nPortalGroupID, bSecondary, true);
 
-	pPortal->Resize(PORTAL_TUNNEL_MODEL_HALFWIDTH * fScale, PORTAL_TUNNEL_MODEL_HALFHEIGHT * fScale);
+	//pPortal->Resize(PORTAL_TUNNEL_MODEL_HALFWIDTH * fScale, PORTAL_TUNNEL_MODEL_HALFHEIGHT * fScale);
 
 	//HACK: Remove the portal's microphone/speaker to fix sound bug in rooms with many portal doors.
 	if (pPortal)
 	{
-		pPortal->RemovePortalMicAndSpeaker();
-		pPortal->m_bHACKUseMicrophones = false;
+		//pPortal->RemovePortalMicAndSpeaker();
+		//pPortal->m_bHACKUseMicrophones = false;
 	}
 
 	vFinalPosition = GetAbsOrigin();

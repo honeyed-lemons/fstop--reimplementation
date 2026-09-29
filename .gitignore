@@ -47,6 +47,4 @@ config.cfg
 /src/.vs/Game_Portal-2013
 /src/game/server/Debug_portal
 /src/game/client/client_portal.vcxproj.vpc_crc
-/src/game/client/client_portal.vpc
 /src/game/server/server_portal.vcxproj.vpc_crc
-/src/game/server/server_portal.vpc

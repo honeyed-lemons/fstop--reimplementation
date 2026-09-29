@@ -192,7 +192,7 @@ void CPropPortalLinkedDoor::Init( void )
 	Assert( m_hPortal );
 	if ( m_hPortal )
 	{
-		m_hPortal->ChangeLinkageGroup( PORTAL_LINKAGE_GROUP_INVALID );
+		//m_hPortal->ChangeLinkageGroup( PORTAL_LINKAGE_GROUP_INVALID );
 		m_hPortal->m_bIsPortal2 = m_bIsPortal2;
 		m_hPortal->SetOwnerEntity( this );
 		DispatchSpawn( m_hPortal );
@@ -258,26 +258,26 @@ void CPropPortalLinkedDoor::EnableLinkage( void )
 		// Make sure this portal and the partner's portal share the same linkage id
 		unsigned char iPortalID = m_hPortal->GetLinkageGroup();
 		unsigned char iPartnerID = m_hPartner->GetPortal()->GetLinkageGroup();
-		unsigned char iLinkageID = PORTAL_LINKAGE_GROUP_INVALID;
-		// Update linkage id to match if they don't match, or if both are invalid
-		if ( (iPortalID != iPartnerID) || 
-			 (iPortalID == PORTAL_LINKAGE_GROUP_INVALID) )
-		{
-			// choose one thats valid, as long as both portals agree
-			iLinkageID = (iPortalID != PORTAL_LINKAGE_GROUP_INVALID) ? (iPortalID) : (iPartnerID);
+		//unsigned char iLinkageID = PORTAL_LINKAGE_GROUP_INVALID;
+		//// Update linkage id to match if they don't match, or if both are invalid
+		//if ( (iPortalID != iPartnerID) || 
+		//	 (iPortalID == PORTAL_LINKAGE_GROUP_INVALID) )
+		//{
+		//	// choose one thats valid, as long as both portals agree
+		//	iLinkageID = (iPortalID != PORTAL_LINKAGE_GROUP_INVALID) ? (iPortalID) : (iPartnerID);
 
-			// Neither was valid, get an unused one and assign it to both
-			if ( iLinkageID == PORTAL_LINKAGE_GROUP_INVALID )
-			{
-				iLinkageID = UTIL_GetUnusedLinkageID();
-			}
+		//	// Neither was valid, get an unused one and assign it to both
+		//	if ( iLinkageID == PORTAL_LINKAGE_GROUP_INVALID )
+		//	{
+		//		iLinkageID = UTIL_GetUnusedLinkageID();
+		//	}
 
-			// Assuming the above worked..
-			Assert( iLinkageID != PORTAL_LINKAGE_GROUP_INVALID );
+		//	// Assuming the above worked..
+		//	Assert( iLinkageID != PORTAL_LINKAGE_GROUP_INVALID );
 
-			m_hPortal->ChangeLinkageGroup( iLinkageID );
-			m_hPartner->GetPortal()->ChangeLinkageGroup( iLinkageID );
-		}
+		//	m_hPortal->ChangeLinkageGroup( iLinkageID );
+		//	m_hPartner->GetPortal()->ChangeLinkageGroup( iLinkageID );
+		//}
 		
 		if ( !m_hPortal->IsActivedAndLinked() )
 		{
@@ -289,7 +289,7 @@ void CPropPortalLinkedDoor::EnableLinkage( void )
 			UTIL_TraceLine( vecPortalPos, vecPortalPos - ( vecForward * 24.0f ), MASK_SOLID, this, COLLISION_GROUP_NONE, &tr );
 
 			// m_hPortal->Resize( 56, 50 ); // FIXME: Need to get these dimensions from somewhere else!
-			m_hPortal->Resize( 78, 82 ); // FIXME: Need to get these dimensions from somewhere else!
+			//m_hPortal->Resize( 78, 82 ); // FIXME: Need to get these dimensions from somewhere else!
 			m_hPortal->m_bActivated = true;
 			m_hPortal->PlacePortal( tr.endpos, GetAbsAngles(), 1.0f, true );
 			m_hPortal->SetContextThink( &CProp_Portal::DelayedPlacementThink, gpGlobals->curtime, s_pDelayedPlacementContext ); 

@@ -99,19 +99,15 @@ struct PS_PlacementData_t //stuff useful for geometric operations
 	Vector vForward;
 	Vector vUp;
 	Vector vRight;
-	float fHalfWidth, fHalfHeight;
 	VPlane PortalPlane;
 	VMatrix matThisToLinked;
 	VMatrix matLinkedToThis;
 	PortalTransformAsAngledPosition_t ptaap_ThisToLinked;
 	PortalTransformAsAngledPosition_t ptaap_LinkedToThis;
 	CPhysCollide* pHoleShapeCollideable; //used to test if a collideable is in the hole, should NOT be collided against in general
-	Vector				vecCurAABBMins;
-	Vector				vecCurAABBMaxs;
 	PS_PlacementData_t(void)
 	{
 		memset(this, 0, sizeof(PS_PlacementData_t));
-		ptCenter.Invalidate();
 	}
 };
 
@@ -124,18 +120,6 @@ struct PS_SD_Static_World_Brushes_t
 	PS_SD_Static_World_Brushes_t() : pCollideable(NULL), pPhysicsObject(NULL) {};
 #else
 	PS_SD_Static_World_Brushes_t() : pCollideable(NULL) {};
-#endif
-
-};
-
-struct PS_SD_Static_World_Displacements_t
-{
-	CPhysCollide* pCollideable;
-#ifndef CLIENT_DLL
-	IPhysicsObject* pPhysicsObject;
-	PS_SD_Static_World_Displacements_t() : pCollideable(NULL), pPhysicsObject(NULL) {};
-#else
-	PS_SD_Static_World_Displacements_t() : pCollideable(NULL) {};
 #endif
 
 };
@@ -169,7 +153,6 @@ struct PS_SD_Static_World_StaticProps_t
 struct PS_SD_Static_World_t //stuff in front of the portal
 {
 	PS_SD_Static_World_Brushes_t Brushes;
-	PS_SD_Static_World_Displacements_t Displacements;
 	PS_SD_Static_World_StaticProps_t StaticProps;
 };
 
@@ -288,7 +271,6 @@ struct PS_InternalData_t
 {
 	PS_PlacementData_t Placement;
 	PS_SimulationData_t Simulation;
-
 };
 
 
@@ -298,7 +280,6 @@ public:
 	CPortalSimulator(void);
 	~CPortalSimulator(void);
 
-	void				SetSize(float fHalfWidth, float fHalfHeight);
 	void				MoveTo(const Vector& ptCenter, const QAngle& angles);
 	void				ClearEverything(void);
 
@@ -354,7 +335,6 @@ public:
 #endif
 
 protected:
-	void				MovedOrResized(const Vector& ptCenter, const QAngle& qAngles, float fHalfWidth, float fHalfHeight); //MoveTo() and SetSize() funnel here to create geometry
 	bool				m_bLocalDataIsReady; //this side of the portal is properly setup, no guarantees as to linkage to another portal
 	bool				m_bSimulateVPhysics;
 	bool				m_bGenerateCollision;
@@ -498,4 +478,3 @@ inline CPortalSimulator* CPortalSimulator::GetLinkedPortalSimulator(void) const
 
 
 #endif //#ifndef PORTALSIMULATION_H
-
