@@ -48,3 +48,4 @@ config.cfg
 /src/game/server/Debug_portal
 /src/game/client/client_portal.vcxproj.vpc_crc
 /src/game/server/server_portal.vcxproj.vpc_crc
+/src/game/client/Debug_portal
