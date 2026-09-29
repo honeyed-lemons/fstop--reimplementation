@@ -18,39 +18,39 @@
 //=========================================================
 class CNPC_Bullseye : public CAI_BaseNPC
 {
-	DECLARE_CLASS( CNPC_Bullseye, CAI_BaseNPC );
+	DECLARE_CLASS(CNPC_Bullseye, CAI_BaseNPC);
 
 public:
 	CNPC_Bullseye(void);
 	~CNPC_Bullseye();
 
-	virtual void Precache( void );
-	virtual void Spawn( void );
-	virtual void Activate( void );
-	virtual void OnRestore( void );
+	virtual void Precache(void);
+	virtual void Spawn(void);
+	virtual void Activate(void);
+	virtual void OnRestore(void);
 
 	virtual float GetAutoAimRadius() { return m_fAutoaimRadius; }
 
-	Class_T Classify( void );
-	void	Event_Killed( const CTakeDamageInfo &info );
-	void	DecalTrace( trace_t *pTrace, char const *decalName );
-	void	ImpactTrace( trace_t *pTrace, int iDamageType, char *pCustomImpactName );
-	bool	IsLightDamage( const CTakeDamageInfo &info );
-	void	TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr );
-	int		OnTakeDamage( const CTakeDamageInfo &info );
-	bool	UsePerfectAccuracy( void ) { return m_bPerfectAccuracy; }
+	Class_T Classify(void);
+	void	Event_Killed(const CTakeDamageInfo& info);
+	void	DecalTrace(trace_t* pTrace, char const* decalName);
+	void	ImpactTrace(trace_t* pTrace, int iDamageType, char* pCustomImpactName);
+	bool	IsLightDamage(const CTakeDamageInfo& info);
+	void	TraceAttack(const CTakeDamageInfo& info, const Vector& vecDir, trace_t* ptr);
+	int		OnTakeDamage(const CTakeDamageInfo& info);
+	bool	UsePerfectAccuracy(void) { return m_bPerfectAccuracy; }
 
-	bool	TestHitboxes( const Ray_t &ray, unsigned int fContentsMask, trace_t& tr ) { return false; } // force traces to test against hull
-	
-	void	BullseyeThink( void );
-	bool	CanBecomeRagdoll( void );
+	bool	TestHitboxes(const Ray_t& ray, unsigned int fContentsMask, trace_t& tr) { return false; } // force traces to test against hull
 
-	void	SetPainPartner( CBaseEntity *pOther );
-	void	InputTargeted( inputdata_t &inputdata );
-	void	InputReleased( inputdata_t &inputdata );
-	bool	CanBecomeServerRagdoll( void ) { return false;	}
+	void	BullseyeThink(void);
+	bool	CanBecomeRagdoll(void);
 
-	bool	CanBeAnEnemyOf( CBaseEntity *pEnemy );
+	void	SetPainPartner(CBaseEntity* pOther);
+	void	InputTargeted(inputdata_t& inputdata);
+	void	InputReleased(inputdata_t& inputdata);
+	bool	CanBecomeServerRagdoll(void) { return false; }
+
+	bool	CanBeAnEnemyOf(CBaseEntity* pEnemy);
 
 
 protected:
@@ -62,12 +62,14 @@ protected:
 	float			m_fAutoaimRadius;	// How much to influence player's autoaim.
 	float			m_flMinDistValidEnemy;
 
-
+#ifdef PORTAL2
+	int				m_nTargetObjectSize;	// Size an object must be to care about this bullseye
+#endif // PORTAL2
 
 	DECLARE_DATADESC();
 };
 
-int FindBullseyesInCone( CBaseEntity **pList, int listMax, const Vector &coneOrigin, const Vector &coneAxis, float coneAngleCos, float coneLength );
+int FindBullseyesInCone(CBaseEntity** pList, int listMax, const Vector& coneOrigin, const Vector& coneAxis, float coneAngleCos, float coneLength);
 
 #define SF_BULLSEYE_NONSOLID		(1 << 16)
 #define SF_BULLSEYE_NODAMAGE		(1 << 17)
@@ -78,4 +80,3 @@ int FindBullseyesInCone( CBaseEntity **pList, int listMax, const Vector &coneOri
 
 
 #endif	// NPC_BULLSEYE_H
-

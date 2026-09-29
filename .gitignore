@@ -49,3 +49,4 @@ config.cfg
 /src/game/client/client_portal.vcxproj.vpc_crc
 /src/game/server/server_portal.vcxproj.vpc_crc
 /src/game/client/Debug_portal
+/src/enc_temp_folder

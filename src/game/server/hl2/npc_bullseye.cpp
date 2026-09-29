@@ -21,11 +21,11 @@
 class CBullseyeList : public CAutoGameSystem
 {
 public:
-	CBullseyeList( char const *name ) : CAutoGameSystem( name )
+	CBullseyeList(char const* name) : CAutoGameSystem(name)
 	{
 	}
 
-	virtual void LevelShutdownPostEntity() 
+	virtual void LevelShutdownPostEntity()
 	{
 		Clear();
 	}
@@ -35,44 +35,44 @@ public:
 		m_list.Purge();
 	}
 
-	void AddToList( CNPC_Bullseye *pBullseye );
-	void RemoveFromList( CNPC_Bullseye *pBullseye );
+	void AddToList(CNPC_Bullseye* pBullseye);
+	void RemoveFromList(CNPC_Bullseye* pBullseye);
 
-	CUtlVector< CNPC_Bullseye * >	m_list;
+	CUtlVector< CNPC_Bullseye* >	m_list;
 };
 
-void CBullseyeList::AddToList( CNPC_Bullseye *pBullseye )
+void CBullseyeList::AddToList(CNPC_Bullseye* pBullseye)
 {
-	m_list.AddToTail( pBullseye );
+	m_list.AddToTail(pBullseye);
 }
 
-void CBullseyeList::RemoveFromList( CNPC_Bullseye *pBullseye )
+void CBullseyeList::RemoveFromList(CNPC_Bullseye* pBullseye)
 {
-	int index = m_list.Find( pBullseye );
-	if ( index != m_list.InvalidIndex() )
+	int index = m_list.Find(pBullseye);
+	if (index != m_list.InvalidIndex())
 	{
-		m_list.FastRemove( index );
+		m_list.FastRemove(index);
 	}
 }
 
-CBullseyeList g_BullseyeList( "CBullseyeList" );
+CBullseyeList g_BullseyeList("CBullseyeList");
 
-int FindBullseyesInCone( CBaseEntity **pList, int listMax, const Vector &coneOrigin, const Vector &coneAxis, float coneAngleCos, float coneLength )
+int FindBullseyesInCone(CBaseEntity** pList, int listMax, const Vector& coneOrigin, const Vector& coneAxis, float coneAngleCos, float coneLength)
 {
-	if ( listMax <= 0 )
+	if (listMax <= 0)
 		return 0;
 
 	int count = 0;
 
-	for ( int i = g_BullseyeList.m_list.Count() - 1; i >= 0; --i )
+	for (int i = g_BullseyeList.m_list.Count() - 1; i >= 0; --i)
 	{
-		CNPC_Bullseye *pTest = g_BullseyeList.m_list[i];
+		CNPC_Bullseye* pTest = g_BullseyeList.m_list[i];
 
-		if ( IsPointInCone( pTest->GetAbsOrigin(), coneOrigin, coneAxis, coneAngleCos, coneLength ) )
+		if (IsPointInCone(pTest->GetAbsOrigin(), coneOrigin, coneAxis, coneAngleCos, coneLength))
 		{
 			pList[count] = pTest;
 			count++;
-			if ( count >= listMax )
+			if (count >= listMax)
 				break;
 		}
 	}
@@ -81,56 +81,58 @@ int FindBullseyesInCone( CBaseEntity **pList, int listMax, const Vector &coneOri
 }
 
 
-ConVar	sk_bullseye_health( "sk_bullseye_health","0");
+ConVar	sk_bullseye_health("sk_bullseye_health", "0");
 
-BEGIN_DATADESC( CNPC_Bullseye )
+BEGIN_DATADESC(CNPC_Bullseye)
 
-	DEFINE_FIELD( m_hPainPartner, FIELD_EHANDLE ),
-	DEFINE_KEYFIELD( m_fAutoaimRadius, FIELD_FLOAT, "autoaimradius" ),
-	DEFINE_KEYFIELD( m_flFieldOfView, FIELD_FLOAT, "minangle" ),
-	DEFINE_KEYFIELD( m_flMinDistValidEnemy, FIELD_FLOAT, "mindist" ),
+DEFINE_FIELD(m_hPainPartner, FIELD_EHANDLE),
+DEFINE_KEYFIELD(m_fAutoaimRadius, FIELD_FLOAT, "autoaimradius"),
+DEFINE_KEYFIELD(m_flFieldOfView, FIELD_FLOAT, "minangle"),
+DEFINE_KEYFIELD(m_flMinDistValidEnemy, FIELD_FLOAT, "mindist"),
 
+#ifdef PORTAL2
+DEFINE_KEYFIELD(m_nTargetObjectSize, FIELD_INTEGER, "target_size"),
+#endif // PORTAL2
 
+// DEFINE_FIELD( m_bPerfectAccuracy, FIELD_BOOLEAN ),	// Don't save
 
-	// DEFINE_FIELD( m_bPerfectAccuracy, FIELD_BOOLEAN ),	// Don't save
+// Function Pointers
+DEFINE_THINKFUNC(BullseyeThink),
 
-	// Function Pointers
-	DEFINE_THINKFUNC( BullseyeThink ),
-
-	DEFINE_INPUTFUNC( FIELD_VOID, "InputTargeted", InputTargeted ),
-	DEFINE_INPUTFUNC( FIELD_VOID, "InputReleased", InputReleased ),
-	// Outputs
-	DEFINE_OUTPUT( m_OnTargeted, "OnTargeted"),
-	DEFINE_OUTPUT( m_OnReleased, "OnReleased"),
+DEFINE_INPUTFUNC(FIELD_VOID, "InputTargeted", InputTargeted),
+DEFINE_INPUTFUNC(FIELD_VOID, "InputReleased", InputReleased),
+// Outputs
+DEFINE_OUTPUT(m_OnTargeted, "OnTargeted"),
+DEFINE_OUTPUT(m_OnReleased, "OnReleased"),
 
 END_DATADESC()
 
-LINK_ENTITY_TO_CLASS( npc_bullseye, CNPC_Bullseye );
+LINK_ENTITY_TO_CLASS(npc_bullseye, CNPC_Bullseye);
 
 
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CNPC_Bullseye::CNPC_Bullseye( void )
+CNPC_Bullseye::CNPC_Bullseye(void)
 {
-	m_takedamage	= DAMAGE_YES;
-	m_iHealth		= sk_bullseye_health.GetFloat();
-	m_hPainPartner	= NULL;
-	g_BullseyeList.AddToList( this );
+	m_takedamage = DAMAGE_YES;
+	m_iHealth = sk_bullseye_health.GetFloat();
+	m_hPainPartner = NULL;
+	g_BullseyeList.AddToList(this);
 	m_flFieldOfView = 360;
 	m_flMinDistValidEnemy = 0;
 }
 
-CNPC_Bullseye::~CNPC_Bullseye( void )
+CNPC_Bullseye::~CNPC_Bullseye(void)
 {
-	g_BullseyeList.RemoveFromList( this );
+	g_BullseyeList.RemoveFromList(this);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::Precache( void )
+void CNPC_Bullseye::Precache(void)
 {
 	BaseClass::Precache();
 }
@@ -139,22 +141,22 @@ void CNPC_Bullseye::Precache( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::Spawn( void )
+void CNPC_Bullseye::Spawn(void)
 {
 	Precache();
 
 	// This is a dummy model that is never used!
-	UTIL_SetSize(this, Vector(-16,-16,-16), Vector(16,16,16));
+	UTIL_SetSize(this, Vector(-16, -16, -16), Vector(16, 16, 16));
 
-	SetMoveType( MOVETYPE_NONE );
-	SetBloodColor( BLOOD_COLOR_RED );
+	SetMoveType(MOVETYPE_NONE);
+	SetBloodColor(BLOOD_COLOR_RED);
 	ClearEffects();
-	SetGravity( 0.0 );
+	SetGravity(0.0);
 
-	m_flFieldOfView = cos( DEG2RAD(m_flFieldOfView) / 2.0 );
+	m_flFieldOfView = cos(DEG2RAD(m_flFieldOfView) / 2.0);
 
 	//Got blood?
-	if ( m_spawnflags & SF_BULLSEYE_BLEED )
+	if (m_spawnflags & SF_BULLSEYE_BLEED)
 	{
 		SetBloodColor(BLOOD_COLOR_RED);
 	}
@@ -163,25 +165,25 @@ void CNPC_Bullseye::Spawn( void )
 		SetBloodColor(DONT_BLEED);
 	}
 
-	AddFlag( FL_NPC );
-	AddEFlags( EFL_NO_DISSOLVE );
+	AddFlag(FL_NPC);
+	AddEFlags(EFL_NO_DISSOLVE);
 
-	SetThink( &CNPC_Bullseye::BullseyeThink );
-	SetNextThink( gpGlobals->curtime + 0.1f );
+	SetThink(&CNPC_Bullseye::BullseyeThink);
+	SetNextThink(gpGlobals->curtime + 0.1f);
 
-	SetSolid( SOLID_BBOX );
-	AddSolidFlags( FSOLID_NOT_STANDABLE );
-	if( m_spawnflags & SF_BULLSEYE_NONSOLID )
+	SetSolid(SOLID_BBOX);
+	AddSolidFlags(FSOLID_NOT_STANDABLE);
+	if (m_spawnflags & SF_BULLSEYE_NONSOLID)
 	{
-		AddSolidFlags( FSOLID_NOT_SOLID );
+		AddSolidFlags(FSOLID_NOT_SOLID);
 	}
-	
-	if ( m_spawnflags & SF_BULLSEYE_VPHYSICSSHADOW )
+
+	if (m_spawnflags & SF_BULLSEYE_VPHYSICSSHADOW)
 	{
-		VPhysicsInitShadow( false, false );
+		VPhysicsInitShadow(false, false);
 	}
-	
-	if( m_spawnflags & SF_BULLSEYE_NODAMAGE )
+
+	if (m_spawnflags & SF_BULLSEYE_NODAMAGE)
 	{
 		m_takedamage = DAMAGE_NO;
 	}
@@ -189,16 +191,16 @@ void CNPC_Bullseye::Spawn( void )
 	{
 		m_takedamage = DAMAGE_YES;
 	}
-	AddEffects( EF_NODRAW );
+	AddEffects(EF_NODRAW);
 
 	//Check our water level
 	PhysicsCheckWater();
 
-	CapabilitiesAdd( bits_CAP_SIMPLE_RADIUS_DAMAGE );
+	CapabilitiesAdd(bits_CAP_SIMPLE_RADIUS_DAMAGE);
 
 	m_iMaxHealth = GetHealth();
 
-	if( m_fAutoaimRadius > 0.0f )
+	if (m_fAutoaimRadius > 0.0f)
 	{
 		// Make this an aimtarget, since it has some autoaim influence.
 		AddFlag(FL_AIMTARGET);
@@ -209,11 +211,11 @@ void CNPC_Bullseye::Spawn( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::Activate( void )
+void CNPC_Bullseye::Activate(void)
 {
 	BaseClass::Activate();
 
-	if ( m_spawnflags & SF_BULLSEYE_PERFECTACC )
+	if (m_spawnflags & SF_BULLSEYE_PERFECTACC)
 	{
 		m_bPerfectAccuracy = true;
 	}
@@ -227,18 +229,18 @@ void CNPC_Bullseye::Activate( void )
 //------------------------------------------------------------------------------
 // Purpose : Override so doesn't fall to ground when killed
 //------------------------------------------------------------------------------
-void CNPC_Bullseye::Event_Killed( const CTakeDamageInfo &info )
+void CNPC_Bullseye::Event_Killed(const CTakeDamageInfo& info)
 {
-	BaseClass::Event_Killed( info );
+	BaseClass::Event_Killed(info);
 
-	if( GetParent() )
+	if (GetParent())
 	{
-		if( GetParent()->ClassMatches("prop_combine_ball") )
+		if (GetParent()->ClassMatches("prop_combine_ball"))
 		{
 			// If this bullseye is parented to a combine ball, explode the combine ball
 			// and remove this bullseye.
 			variant_t emptyVariant;
-			GetParent()->AcceptInput( "explode", this, this, emptyVariant, 0 );
+			GetParent()->AcceptInput("explode", this, this, emptyVariant, 0);
 
 			// Unhook.
 			SetParent(NULL);
@@ -248,12 +250,12 @@ void CNPC_Bullseye::Event_Killed( const CTakeDamageInfo &info )
 		}
 	}
 
-	SetMoveType( MOVETYPE_NONE );
-	AddSolidFlags( FSOLID_NOT_SOLID );
-	UTIL_SetSize(this, vec3_origin, vec3_origin );
+	SetMoveType(MOVETYPE_NONE);
+	AddSolidFlags(FSOLID_NOT_SOLID);
+	UTIL_SetSize(this, vec3_origin, vec3_origin);
 
-	SetNextThink( gpGlobals->curtime + 0.1f );
-	SetThink( &CBaseEntity::SUB_Remove );
+	SetNextThink(gpGlobals->curtime + 0.1f);
+	SetThink(&CBaseEntity::SUB_Remove);
 }
 
 //------------------------------------------------------------------------------
@@ -262,10 +264,10 @@ void CNPC_Bullseye::Event_Killed( const CTakeDamageInfo &info )
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
-void CNPC_Bullseye::DecalTrace( trace_t *pOldTrace, char const *decalName )
+void CNPC_Bullseye::DecalTrace(trace_t* pOldTrace, char const* decalName)
 {
-	int index = decalsystem->GetDecalIndexForName( decalName );
-	if ( index < 0 )
+	int index = decalsystem->GetDecalIndexForName(decalName);
+	if (index < 0)
 		return;
 
 	// Get direction of original trace
@@ -273,40 +275,40 @@ void CNPC_Bullseye::DecalTrace( trace_t *pOldTrace, char const *decalName )
 	VectorNormalize(vTraceDir);
 
 	// Create a new trace that passes through me
-	Vector vStartTrace	= pOldTrace->endpos - (1.0 * vTraceDir);
-	Vector vEndTrace	= pOldTrace->endpos + (MAX_TRACE_LENGTH * vTraceDir);
+	Vector vStartTrace = pOldTrace->endpos - (1.0 * vTraceDir);
+	Vector vEndTrace = pOldTrace->endpos + (MAX_TRACE_LENGTH * vTraceDir);
 
 	trace_t pNewTrace;
 	AI_TraceLine(vStartTrace, vEndTrace, MASK_SHOT, this, COLLISION_GROUP_NONE, &pNewTrace);
 
 	CBroadcastRecipientFilter filter;
-	te->Decal( filter, 0.0, &pNewTrace.endpos, &pNewTrace.startpos,
-		ENTINDEX( pNewTrace.m_pEnt ), pNewTrace.hitbox, index );
+	te->Decal(filter, 0.0, &pNewTrace.endpos, &pNewTrace.startpos,
+		ENTINDEX(pNewTrace.m_pEnt), pNewTrace.hitbox, index);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::ImpactTrace( trace_t *pTrace, int iDamageType, char *pCustomImpactName )
+void CNPC_Bullseye::ImpactTrace(trace_t* pTrace, int iDamageType, char* pCustomImpactName)
 {
 	// Get direction of original trace
 	Vector vTraceDir = pTrace->endpos - pTrace->startpos;
 	VectorNormalize(vTraceDir);
 
 	// Create a new trace that passes through me
-	Vector vStartTrace	= pTrace->endpos - (1.0 * vTraceDir);
-	Vector vEndTrace	= pTrace->endpos + (MAX_TRACE_LENGTH * vTraceDir);
+	Vector vStartTrace = pTrace->endpos - (1.0 * vTraceDir);
+	Vector vEndTrace = pTrace->endpos + (MAX_TRACE_LENGTH * vTraceDir);
 
 	trace_t pNewTrace;
 	AI_TraceLine(vStartTrace, vEndTrace, MASK_SHOT, this, COLLISION_GROUP_NONE, &pNewTrace);
 
-	CBaseEntity	*pEntity = pNewTrace.m_pEnt;
+	CBaseEntity* pEntity = pNewTrace.m_pEnt;
 
 	// Only do this for BSP model entities
-	if ( ( pEntity ) && ( pEntity->IsBSPModel() == false ) )
+	if ((pEntity) && (pEntity->IsBSPModel() == false))
 		return;
 
-	BaseClass::ImpactTrace( pTrace, iDamageType, pCustomImpactName );
+	BaseClass::ImpactTrace(pTrace, iDamageType, pCustomImpactName);
 }
 
 //-----------------------------------------------------------------------------
@@ -315,20 +317,20 @@ void CNPC_Bullseye::ImpactTrace( trace_t *pTrace, int iDamageType, char *pCustom
 //
 // Output : 
 //-----------------------------------------------------------------------------
-Class_T	CNPC_Bullseye::Classify( void )
+Class_T	CNPC_Bullseye::Classify(void)
 {
 	return	CLASS_BULLSEYE;
 }
 
-void CNPC_Bullseye::OnRestore( void )
+void CNPC_Bullseye::OnRestore(void)
 {
-	if ( m_spawnflags & SF_BULLSEYE_VPHYSICSSHADOW )
+	if (m_spawnflags & SF_BULLSEYE_VPHYSICSSHADOW)
 	{
-		IPhysicsObject *pObject = VPhysicsGetObject();
+		IPhysicsObject* pObject = VPhysicsGetObject();
 
-		if ( pObject == NULL )
+		if (pObject == NULL)
 		{
-			VPhysicsInitShadow( false, false );
+			VPhysicsInitShadow(false, false);
 		}
 	}
 
@@ -338,10 +340,10 @@ void CNPC_Bullseye::OnRestore( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::BullseyeThink( void )
+void CNPC_Bullseye::BullseyeThink(void)
 {
-	ClearCondition( COND_LIGHT_DAMAGE  );
-	ClearCondition( COND_HEAVY_DAMAGE );
+	ClearCondition(COND_LIGHT_DAMAGE);
+	ClearCondition(COND_HEAVY_DAMAGE);
 }
 
 //-----------------------------------------------------------------------------
@@ -353,29 +355,39 @@ bool CNPC_Bullseye::CanBecomeRagdoll()
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-bool CNPC_Bullseye::CanBeAnEnemyOf( CBaseEntity *pEnemy )
+bool CNPC_Bullseye::CanBeAnEnemyOf(CBaseEntity* pEnemy)
 {
-	static const float flFullFov = cos( DEG2RAD(360) / 2.0 );
-	if ( fabsf( m_flFieldOfView - flFullFov ) > .01 )
+	static const float flFullFov = cos(DEG2RAD(360) / 2.0);
+	if (fabsf(m_flFieldOfView - flFullFov) > .01)
 	{
-		if ( !FInViewCone( pEnemy ) )
+		if (!FInViewCone(pEnemy))
 		{
 			return false;
 		}
 	}
 
-	if ( m_flMinDistValidEnemy > 0 )
+	if (m_flMinDistValidEnemy > 0)
 	{
-		float distSq = ( GetAbsOrigin().AsVector2D() - pEnemy->GetAbsOrigin().AsVector2D() ).LengthSqr();
-		if ( distSq < Square( m_flMinDistValidEnemy ) )
+		float distSq = (GetAbsOrigin().AsVector2D() - pEnemy->GetAbsOrigin().AsVector2D()).LengthSqr();
+		if (distSq < Square(m_flMinDistValidEnemy))
 		{
 			return false;
 		}
 	}
 
+#ifdef PORTAL2
 
+	// Entities must match in size expectations
+	CBaseAnimating* pAnim = pEnemy->GetBaseAnimating();
+	if (pAnim)
+	{
+		if (m_nTargetObjectSize != pAnim->GetObjectScaleLevel())
+			return false;
+	}
 
-	return BaseClass::CanBeAnEnemyOf( pEnemy );
+#endif // PORTAL2
+
+	return BaseClass::CanBeAnEnemyOf(pEnemy);
 }
 
 //-----------------------------------------------------------------------------
@@ -383,9 +395,9 @@ bool CNPC_Bullseye::CanBeAnEnemyOf( CBaseEntity *pEnemy )
 // Input  : fDamage - amount of damage
 //			bitsDamageType - damage type
 //-----------------------------------------------------------------------------
-bool CNPC_Bullseye::IsLightDamage( const CTakeDamageInfo &info )
+bool CNPC_Bullseye::IsLightDamage(const CTakeDamageInfo& info)
 {
-	return ( info.GetDamage() > 0 );
+	return (info.GetDamage() > 0);
 }
 
 
@@ -397,27 +409,27 @@ bool CNPC_Bullseye::IsLightDamage( const CTakeDamageInfo &info )
 //			*ptr - 
 //			bitsDamageType - 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr )
+void CNPC_Bullseye::TraceAttack(const CTakeDamageInfo& info, const Vector& vecDir, trace_t* ptr)
 {
 	//If specified, we must be the enemy of the target
-	if ( m_spawnflags & SF_BULLSEYE_ENEMYDAMAGEONLY )
+	if (m_spawnflags & SF_BULLSEYE_ENEMYDAMAGEONLY)
 	{
-		CAI_BaseNPC *pInstigator = info.GetAttacker()->MyNPCPointer();
+		CAI_BaseNPC* pInstigator = info.GetAttacker()->MyNPCPointer();
 
-		if ( pInstigator == NULL )
+		if (pInstigator == NULL)
 			return;
 
-		if ( pInstigator->GetEnemy() != this )
+		if (pInstigator->GetEnemy() != this)
 			return;
 	}
 
 	//We can bleed if we want to, we can leave decals behind...
-	if ( ( m_spawnflags & SF_BULLSEYE_BLEED ) && ( m_takedamage == DAMAGE_NO ) )
+	if ((m_spawnflags & SF_BULLSEYE_BLEED) && (m_takedamage == DAMAGE_NO))
 	{
-		TraceBleed( info.GetDamage(), vecDir, ptr, info.GetDamageType() );
+		TraceBleed(info.GetDamage(), vecDir, ptr, info.GetDamageType());
 	}
 
-	BaseClass::TraceAttack( info, vecDir, ptr );
+	BaseClass::TraceAttack(info, vecDir, ptr);
 }
 
 
@@ -429,51 +441,51 @@ void CNPC_Bullseye::TraceAttack( const CTakeDamageInfo &info, const Vector &vecD
 //			bitsDamageType - 
 // Output : int
 //-----------------------------------------------------------------------------
-int CNPC_Bullseye::OnTakeDamage( const CTakeDamageInfo &info )
+int CNPC_Bullseye::OnTakeDamage(const CTakeDamageInfo& info)
 {
-	SetNextThink( gpGlobals->curtime );
+	SetNextThink(gpGlobals->curtime);
 
 	//If specified, we must be the enemy of the target
-	if ( m_spawnflags & SF_BULLSEYE_ENEMYDAMAGEONLY )
+	if (m_spawnflags & SF_BULLSEYE_ENEMYDAMAGEONLY)
 	{
-		CAI_BaseNPC *pInstigator = info.GetAttacker()->MyNPCPointer();
+		CAI_BaseNPC* pInstigator = info.GetAttacker()->MyNPCPointer();
 
-		if ( pInstigator == NULL )
+		if (pInstigator == NULL)
 			return 0;
 
-		if ( pInstigator->GetEnemy() != this )
+		if (pInstigator->GetEnemy() != this)
 			return 0;
 	}
-	
+
 	//If we're a pain proxy, send the damage through
-	if ( m_hPainPartner != NULL )
+	if (m_hPainPartner != NULL)
 	{
-		m_hPainPartner->TakeDamage( info );
-		
+		m_hPainPartner->TakeDamage(info);
+
 		//Fire all pain indicators but take no real damage
 		CTakeDamageInfo subInfo = info;
-		subInfo.SetDamage( 0 );
-		return BaseClass::OnTakeDamage( subInfo );
+		subInfo.SetDamage(0);
+		return BaseClass::OnTakeDamage(subInfo);
 	}
 
-	return BaseClass::OnTakeDamage( info );
+	return BaseClass::OnTakeDamage(info);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *pOther - 
 //-----------------------------------------------------------------------------
-void CNPC_Bullseye::SetPainPartner( CBaseEntity *pOther )
+void CNPC_Bullseye::SetPainPartner(CBaseEntity* pOther)
 {
 	m_hPainPartner = pOther;
 }
 
-void CNPC_Bullseye::InputTargeted( inputdata_t &inputdata )
+void CNPC_Bullseye::InputTargeted(inputdata_t& inputdata)
 {
-	m_OnTargeted.FireOutput( inputdata.pActivator, inputdata.pCaller, 0 );
+	m_OnTargeted.FireOutput(inputdata.pActivator, inputdata.pCaller, 0);
 }
 
-void CNPC_Bullseye::InputReleased( inputdata_t &inputdata )
+void CNPC_Bullseye::InputReleased(inputdata_t& inputdata)
 {
-	m_OnReleased.FireOutput( inputdata.pActivator, inputdata.pCaller, 0 );
+	m_OnReleased.FireOutput(inputdata.pActivator, inputdata.pCaller, 0);
 }
