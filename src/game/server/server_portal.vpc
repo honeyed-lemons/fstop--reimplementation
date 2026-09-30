@@ -390,6 +390,17 @@ $Project "Server (Portal)"
 				$File	"portal2\weapon_camera.h"
 				$File	"portal2\weapon_placement.cpp"
 			}
+			$Folder	"2b1w"
+			{
+				$File	"portal2\npc_companionbot.cpp"			
+				$File	"portal2\npc_companionbot.h"
+				$File	"portal2\npc_medicbot.cpp"			
+				$File	"portal2\npc_medicbot.h"
+				$File	"portal2\npc_obot.cpp"			
+				$File	"portal2\npc_obot.h"
+				$File	"portal2\bot_stubs.cpp"
+				$File	"portal2\bot_stubs.h"
+			}
 		}
 	}
 }
