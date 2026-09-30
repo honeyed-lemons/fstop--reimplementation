@@ -685,7 +685,6 @@ END_DATADESC()
 //-----------------------------------------------------------------------------
 void CWeaponCamera::CaptureObject( CBaseEntity *pObject )
 {
-	Msg("Capturing object %s\n", pObject->GetDebugName());
 	CBaseAnimating* pAnim = pObject->GetBaseAnimating();
 	Assert( pAnim );
 

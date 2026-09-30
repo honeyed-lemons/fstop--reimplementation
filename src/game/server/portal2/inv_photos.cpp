@@ -211,7 +211,6 @@ int Photo_Add( CaptureInfo_t *pInfo )
 		pPlayer->OnPhotoAdded( nIndex );
 	}
 
-	Msg("Photo added to inventory at index %d\n", nIndex);
 	return nIndex;
 }
 
